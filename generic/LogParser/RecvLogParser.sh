@@ -24,6 +24,6 @@
 
 LOGFILE=$1
 cat $1 | grep -E "\(EOP\)" \
-     | grep -oE "[0-9]+,|0\.[0-9]*" \
-     | sed ':a;N;$!ba;s/,\n/,/g' \
-     | sed '1s/^/size(bytes),time(sec)\n/'
+       | grep -oE "[0-9]+,|0\.[0-9]*" \
+       | sed ':a;N;$!ba;s/,\n/,/g' \
+       | sed '1s/^/size(bytes),time(sec)\n/'
