@@ -36,6 +36,10 @@ int main(int argc, char *argv[])
     addr.sin_addr.s_addr=inet_addr(HELLO_GROUP);
     addr.sin_port=htons(HELLO_PORT);
 
+    /* code for setting TTL */
+    int newttl = 8;
+    setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &newttl, sizeof(newttl));
+
     /* now just sendto() our destination! */
     while (1) {
         if (sendto(fd, message, sizeof(message), 0, (struct sockaddr *) &addr,
