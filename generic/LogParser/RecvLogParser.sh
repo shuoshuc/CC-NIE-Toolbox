@@ -19,7 +19,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 # more details at http://www.gnu.org/copyleft/gpl.html
 #
-# @brief    Read raw log file and parse the product size and elapsed time.
+# @brief    Read raw recv log file and parse the product size and elapsed time.
 #
 
 LOGFILE=$1
