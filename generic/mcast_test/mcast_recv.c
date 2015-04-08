@@ -1,10 +1,9 @@
-/*
- * listener.c -- joins a multicast group and echoes all data it receives from
+/**
+ * mcast_recv.c -- joins a multicast group and echoes all data it receives from
  * the group to its stdout...
  *
- *  Antony Courtney,   25/11/94
- *  Modified by: Frédéric Bastien (25/03/04)
- *  to compile without warning and work correctly
+ *  Created by: Antony Courtney,   25/11/94
+ *  Modified by: Shawn Chen, Apr. 7, 2015
  */
 
 #include <sys/types.h>
@@ -18,25 +17,29 @@
 #include <unistd.h>
 
 
-#define HELLO_PORT 12345
-//#define HELLO_GROUP "225.0.0.37"
-#define HELLO_GROUP "233.0.225.123"
+#define HELLO_PORT 5173
+#define HELLO_GROUP "224.0.0.1"
 #define MSGBUFSIZE 256
+
 
 int main(int argc, char *argv[])
 {
+    if (argc < 1) {
+        perror("insufficient arguments");
+        exit(1);
+    }
+
     struct sockaddr_in addr;
     int fd, nbytes, addrlen;
     struct ip_mreq mreq;
     char msgbuf[MSGBUFSIZE];
-    u_int yes=1;            /*** MODIFICATION TO ORIGINAL */
+
     /* create what looks like an ordinary UDP socket */
-    if ((fd=socket(AF_INET,SOCK_DGRAM,0)) < 0) {
+    if ((fd=socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("socket");
         exit(1);
     }
 
-    /**** MODIFICATION TO ORIGINAL */
     /* allow multiple sockets to use the same PORT number */
     /*
     if (setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)) < 0) {
@@ -44,24 +47,23 @@ int main(int argc, char *argv[])
         exit(1);
     }
     */
-    /*** END OF MODIFICATION TO ORIGINAL */
 
     /* set up destination address */
     memset(&addr,0,sizeof(addr));
-    addr.sin_family=AF_INET;
-    addr.sin_addr.s_addr=htonl(INADDR_ANY); /* N.B.: differs from sender */
-    addr.sin_port=htons(HELLO_PORT);
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY); /* N.B.: differs from sender */
+    addr.sin_port = htons(HELLO_PORT);
 
     /* bind to receive address */
-    if (bind(fd,(struct sockaddr *) &addr,sizeof(addr)) < 0) {
+    if (bind(fd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         perror("bind");
         exit(1);
     }
 
     /* use setsockopt() to request that the kernel join a multicast group */
-    mreq.imr_multiaddr.s_addr=inet_addr(HELLO_GROUP);
-    mreq.imr_interface.s_addr=htonl(INADDR_ANY);
-    if (setsockopt(fd,IPPROTO_IP,IP_ADD_MEMBERSHIP,&mreq,sizeof(mreq)) < 0) {
+    mreq.imr_multiaddr.s_addr = inet_addr(HELLO_GROUP);
+    mreq.imr_interface.s_addr = inet_addr(argv[1]);
+    if (setsockopt(fd,IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
         perror("setsockopt");
         exit(1);
     }
