@@ -1,5 +1,5 @@
 ##
-# Copyright (C) 2014 University of Virginia. All rights reserved.
+# Copyright (C) 2015 University of Virginia. All rights reserved.
 #
 # @file      metaparser.py
 # @author    Shawn Chen <sc7cq@virginia.edu>
@@ -35,7 +35,7 @@ def main(filename, newfile):
         w.write(size + '\n')
     f.close()
     w.close()
-    
+
 # takes 2 command line arguments, first is log file name, second is new file to
 # contain the parsed results.
 if __name__ == "__main__":
