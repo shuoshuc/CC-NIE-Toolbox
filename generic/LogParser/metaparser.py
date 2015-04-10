@@ -31,7 +31,6 @@ def main(filename, newfile):
     # parses the pattern but only takes the number
     sizes = re.findall(r'INFO:\s+(\d+)', f.read())
     for size in sizes:
-        print size
         w.write(size + '\n')
     f.close()
     w.close()
