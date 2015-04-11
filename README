@@ -1,1 +1,12 @@
 This repo contains the scripts and programs for NSF granted CC-NIE project.
+
+CONTENTS OF THIS REPO
+---------------------
+* ExoGENI - contains flukes configuration
+* generic - contains multicast test program, vcmtp/ldm log parser, tc traffic
+            shaper scripts.
+
+MAINTAINERS
+-----------
+* Shawn Chen, sc7cq@virginia.edu,
+  University of Virginia
