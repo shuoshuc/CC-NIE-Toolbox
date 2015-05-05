@@ -64,4 +64,5 @@ simu <- rpareto(length(sizevec), scale=scale, shape=shape)
 kslist <- ks.test(sizevec, simu)
 
 # get p-value of the KS test
+# this p-value is the final evaluation of the fitness of the model
 pval <- kslist[2][["p.value"]]
