@@ -4,7 +4,7 @@ CONTENTS OF THIS REPO
 ---------------------
 * ExoGENI - contains flukes configuration
 * generic - contains multicast test program, vcmtp/ldm log parser, tc traffic
-            shaper scripts.
+            shaper scripts, R model fitting scripts.
 
 MAINTAINERS
 -----------
