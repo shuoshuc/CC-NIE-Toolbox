@@ -20,7 +20,6 @@
 # more details at http://www.gnu.org/copyleft/gpl.html
 #
 # @brief    Read raw recv log file and parse the product size and elapsed time.
-#
 
 LOGFILE=$1
 cat $1 | grep -E "\(EOP\)" \
