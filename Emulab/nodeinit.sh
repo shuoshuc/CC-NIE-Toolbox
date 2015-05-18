@@ -2,7 +2,7 @@
 
 sudo yum -y update
 sudo rpm -ivh ~shawn/nuttcp-6.1.2-3.3.x86_64.rpm
-sudo cp ~shawn/devtools-1.1.repo /etc
+sudo cp ~shawn/devtools-1.1.repo /etc/yum.repos.d
 sudo yum -y --enablerepo=testing-1.1-devtools-6 install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
 sudo rm /usr/bin/g++
 sudo ln -s /opt/centos/devtoolset-1.1/root/usr/bin/g++ /usr/bin
