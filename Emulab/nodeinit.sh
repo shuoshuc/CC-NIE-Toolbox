@@ -8,4 +8,5 @@ sudo rm /usr/bin/g++
 sudo ln -s /opt/centos/devtoolset-1.1/root/usr/bin/g++ /usr/bin
 sudo cp ~shawn/CC-NIE-Toolbox/generic/tc/sysctl.conf /etc
 sudo sysctl -p
+limit coredumpsize unlimited
 git clone https://github.com/Unidata/vcmtp.git
