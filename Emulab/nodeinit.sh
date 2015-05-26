@@ -6,7 +6,7 @@ sudo cp ~shawn/devtools-1.1.repo /etc/yum.repos.d
 sudo yum -y --enablerepo=testing-1.1-devtools-6 install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
 sudo rm /usr/bin/g++
 sudo ln -s /opt/centos/devtoolset-1.1/root/usr/bin/g++ /usr/bin
-sudo cp ~shawn/CC-NIE-Toolbox/generic/tc/sysctl.conf /etc
+sudo cp ~shawn/CC-NIE-Toolbox/ExoGENI/sysctl.conf /etc
 sudo sysctl -p
 tcsh -c "limit coredumpsize unlimited"
 git clone https://github.com/Unidata/vcmtp.git
