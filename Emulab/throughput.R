@@ -23,7 +23,7 @@
 
 
 # users can tune this variable to read csv data from different test cases
-testcase <- 'loss5_size100_factor10_15nodes'
+testcase <- 'loss2_size100_factor10_15nodes'
 nodename <- paste('rawcsv_node', 0:14, sep = '')
 filename <- paste('node', 0:14, '-noloss.csv', sep = '')
 # construct the csv file path
