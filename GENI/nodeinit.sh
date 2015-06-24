@@ -31,6 +31,8 @@ cp devtools-1.1.repo /etc/yum.repos.d
 yum -y --enablerepo=testing-1.1-devtools-6 install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
 rm /usr/bin/g++
 ln -s /opt/centos/devtoolset-1.1/root/usr/bin/g++ /usr/bin
+ntpdate -q pool.ntp.org
+service ntpd start
 cp ~shawn/CC-NIE-Toolbox/ExoGENI/sysctl.conf /etc
 sysctl -p
 git clone https://github.com/Unidata/vcmtp.git
