@@ -25,14 +25,13 @@
 # @brief    GENI node initialization
 
 
+wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo
 yum -y update
-wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo
-cp devtools-1.1.repo /etc/yum.repos.d
-yum -y --enablerepo=testing-1.1-devtools-6 install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++
+yum -y install devtoolset-2-gcc devtoolset-2-binutils devtoolset-2-gcc-c++
 rm /usr/bin/g++
-ln -s /opt/centos/devtoolset-1.1/root/usr/bin/g++ /usr/bin
+ln -s /opt/rh/devtoolset-2/root/usr/bin/g++ /usr/bin
 ntpdate -q pool.ntp.org
 service ntpd start
-cp ~shawn/CC-NIE-Toolbox/ExoGENI/sysctl.conf /etc
+cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p
 git clone https://github.com/Unidata/vcmtp.git
