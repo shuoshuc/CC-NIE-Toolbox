@@ -1,0 +1,7 @@
+Wide Area Network Multicast Deployment
+1. turn off iptables
+2. RHEL6/7 or higher needs to loose the rp_filter setting
+3. On a multi-NIC system, if the multicast traffic is not going out via the
+   default interface, needs to add a new routing entry to the sender. For
+   example: ip route add 224.0.0.1 via 10.10.1.1 dev p2p1.1234
+4. Pay attention to TTL if doing ip multicast.
