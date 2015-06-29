@@ -49,8 +49,34 @@ def checkTimeElapse(start, end):
         over_one_min = (end - start) > datetime.timedelta(minutes = 1)
     else:
         over_one_min = (start - end) > datetime.timedelta(minutes = 1)
-
     return over_one_min
+
+
+def parseSizeTime(line):
+    """Parses the product size and receiving time in a line.
+
+    Parses the product size and receiving time consumed for the product in
+    the given line of log file.
+
+    Args:
+        line: A line of the raw log file.
+
+    Returns:
+        (-1, -1, -1): If no valid size or time is found.
+        (prodindex, prodsize, rxtime): A tuple of product index, product size
+                                       and receiving time.
+    """
+    success_match = re.search(r'.*\[SUCCESS\].*#(\d+)', line)
+    if success_match:
+        sizematch = re.search(r'.*size = (\d+) bytes', line)
+        timematch = re.search(r'.*time = (\d+\.\d+) seconds', line)
+    if success_match and sizematch and timematch:
+        prodindex = int(success_match.group(1))
+        size      = int(sizematch.group(1))
+        rxtime    = float(timematch.group(1))
+        return (prodindex, size, rxtime)
+    else:
+        return (-1, -1, -1)
 
 
 def main(filename, newfile):
@@ -65,25 +91,49 @@ def main(filename, newfile):
         newfile : Filename of the new file to contain output results.
     """
     f = open(filename, 'r')
-    w = open(newfile, 'w+')
+    #w = open(newfile, 'w+')
+    # unit is byte
+    bytes_in_minute  = 0
+    # unit is second
+    rxtime_in_minute = 0
+    basetime         = datetime.datetime(2000, 1, 1, 0, 0, 0)
+    baseline         = 0
     for i, line in enumerate(f):
-        match = re.search(r'^\d+-\d+-\d+ \d+:\d+:\d+  ', line)
-        print match.group(0)
-        eventtime = datetime.datetime.strptime(match.group(0),
+        timestamp_match = re.search(r'^\d+-\d+-\d+ \d+:\d+:\d+  ', line)
+        print timestamp_match.group(0), 'i =', i
+        eventtime = datetime.datetime.strptime(timestamp_match.group(0),
                                                "%Y-%m-%d %H:%M:%S  ")
-        mytime = datetime.datetime.strptime("2015-06-29 10:00:00",
-                                               "%Y-%m-%d %H:%M:%S")
-        if checkTimeElapse(eventtime, mytime):
-            print 'True'
+        if not i:
+            basetime = eventtime
+            baseline = i
+            continue
+        (prodid_success, size, rxtime) = parseSizeTime(line)
+        if checkTimeElapse(basetime, eventtime):
+            print 'elapse > 1 min'
+            # throughput unit is bps
+            minute_based_thru = float(bytes_in_minute) / 60 * 8
+            if rxtime_in_minute:
+                prod_based_thru = float(bytes_in_minute) / rxtime_in_minute * 8
+            else:
+                prod_based_thru = 0
+            print 'minute_based_throughput =', minute_based_thru
+            print 'product_based_throughput =', prod_based_thru
+            basetime = eventtime
+            baseline = i
+            if prodid_success >= 0:
+                bytes_in_minute  = size
+                rxtime_in_minute = rxtime
+            else:
+                bytes_in_minute  = 0
+                rxtime_in_minute = 0
+        else:
+            print 'elapse < 1 min'
+            if prodid_success >= 0:
+                bytes_in_minute  += size
+                rxtime_in_minute += rxtime
 
-    """
-    # parses the pattern but only takes the number
-    sizes = re.findall(r'INFO:\s+(\d+)', f.read())
-    for size in sizes:
-        w.write(size + '\n')
     f.close()
-    w.close()
-    """
+    #w.close()
 
 
 if __name__ == "__main__":
