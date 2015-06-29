@@ -28,7 +28,6 @@ usage     python recvLogParser.py <logfile-to-read> <newfile-to-write>
 
 import re
 import sys
-import time
 import datetime
 
 
@@ -39,16 +38,18 @@ def checkTimeElapse(start, end):
     than one minute. If so, returns True. Otherwise, returns False.
 
     Args:
-        start: Start of the time, should be a time struct
-        end  : End of the time, should be a time struct
+        start: Start of the time, should be a datetime struct
+        end  : End of the time, should be a datetime struct
 
     Returns:
         True : Elapsed time is longer than 1 minute.
         False: Elapsed time is shorter than 1 minute.
     """
-    s = datetime.datetime.fromtimestamp(time.mktime(start))
-    e = datetime.datetime.fromtimestamp(time.mktime(end))
-    over_one_min = (e - s) > datetime.timedelta(minutes = 1)
+    if end > start:
+        over_one_min = (end - start) > datetime.timedelta(minutes = 1)
+    else:
+        over_one_min = (start - end) > datetime.timedelta(minutes = 1)
+
     return over_one_min
 
 
@@ -65,12 +66,24 @@ def main(filename, newfile):
     """
     f = open(filename, 'r')
     w = open(newfile, 'w+')
+    for i, line in enumerate(f):
+        match = re.search(r'^\d+-\d+-\d+ \d+:\d+:\d+  ', line)
+        print match.group(0)
+        eventtime = datetime.datetime.strptime(match.group(0),
+                                               "%Y-%m-%d %H:%M:%S  ")
+        mytime = datetime.datetime.strptime("2015-06-29 10:00:00",
+                                               "%Y-%m-%d %H:%M:%S")
+        if checkTimeElapse(eventtime, mytime):
+            print 'True'
+
+    """
     # parses the pattern but only takes the number
     sizes = re.findall(r'INFO:\s+(\d+)', f.read())
     for size in sizes:
         w.write(size + '\n')
     f.close()
     w.close()
+    """
 
 
 if __name__ == "__main__":
