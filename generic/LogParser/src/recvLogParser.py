@@ -152,7 +152,7 @@ def main(filename, newfile):
         newfile : Filename of the new file to contain output results.
     """
     f = open(filename, 'r')
-    #w = open(newfile, 'w+')
+    w = open(newfile, 'w+')
     # unit is byte
     bytes_in_minute  = 0
     # unit is second
@@ -191,6 +191,9 @@ def main(filename, newfile):
             if block_in_minute:
                 retx_rate = float(retx_in_minute / block_in_minute) * 100
                 print 'retx rate =', retx_rate
+            tmp_str = str(minute_based_thru) + ',' + str(prod_based_thru) \
+                    + ',' + str(reliability) + ',' + str(retx_rate) + '\n'
+            w.write(tmp_str)
             # starts again for next new minute, re-initialize
             basetime = eventtime
             baseline = i
@@ -228,7 +231,7 @@ def main(filename, newfile):
                 retx_in_minute  += 1
 
     f.close()
-    #w.close()
+    w.close()
 
 
 if __name__ == "__main__":
