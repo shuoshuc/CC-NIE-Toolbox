@@ -102,6 +102,44 @@ def parseFailure(line):
         return -1
 
 
+def parseMcastData(line):
+    """Parses the log to find multicast data blocks.
+
+    Parses the log to find multicast data blocks.
+
+    Args:
+        line: A line of the raw log file.
+
+    Returns:
+        -1: If no multicast block is found.
+        prodindex: Index of the product which has multicast blocks.
+    """
+    mcast_match = re.search(r'.*\[MCAST DATA\].*#(\d+)', line)
+    if mcast_match:
+        return int(mcast_match.group(1))
+    else:
+        return -1
+
+
+def parseRetxData(line):
+    """Parses the log to find retransmitted data blocks.
+
+    Parses the log to find retransmitted data blocks.
+
+    Args:
+        line: A line of the raw log file.
+
+    Returns:
+        -1: If no retransmitted block is found.
+        prodindex: Index of the product which has retransmitted blocks.
+    """
+    retx_match = re.search(r'.*\[RETX DATA\].*#(\d+)', line)
+    if retx_match:
+        return int(retx_match.group(1))
+    else:
+        return -1
+
+
 def main(filename, newfile):
     """Reads the raw log file and parses it.
 
@@ -123,9 +161,10 @@ def main(filename, newfile):
     baseline         = 0
     prod_in_minute   = 0
     fail_in_minute   = 0
+    block_in_minute  = 0
+    retx_in_minute   = 0
     for i, line in enumerate(f):
         timestamp_match = re.search(r'^\d+-\d+-\d+ \d+:\d+:\d+  ', line)
-        print timestamp_match.group(0), 'i =', i
         eventtime = datetime.datetime.strptime(timestamp_match.group(0),
                                                "%Y-%m-%d %H:%M:%S  ")
         if not i:
@@ -134,8 +173,9 @@ def main(filename, newfile):
             continue
         (prodid_success, size, rxtime) = parseSizeTime(line)
         prodid_failure = parseFailure(line)
+        prodid_mcast = parseMcastData(line)
+        prodid_retx = parseRetxData(line)
         if checkTimeElapse(basetime, eventtime):
-            print 'elapse > 1 min'
             # throughput unit is bps
             minute_based_thru = float(bytes_in_minute) / 60 * 8
             if rxtime_in_minute:
@@ -146,8 +186,11 @@ def main(filename, newfile):
             print 'product_based_throughput =', prod_based_thru
             if prod_in_minute:
                 success_in_minute = prod_in_minute - fail_in_minute
-                reliability = float(success_in_minute / prod_in_minute)
+                reliability = float(success_in_minute / prod_in_minute) * 100
                 print 'reliability =', reliability
+            if block_in_minute:
+                retx_rate = float(retx_in_minute / block_in_minute) * 100
+                print 'retx rate =', retx_rate
             # starts again for next new minute, re-initialize
             basetime = eventtime
             baseline = i
@@ -155,6 +198,8 @@ def main(filename, newfile):
             rxtime_in_minute = 0
             prod_in_minute   = 0
             fail_in_minute   = 0
+            block_in_minute  = 0
+            retx_in_minute   = 0
             # process next new minute
             if prodid_success >= 0:
                 bytes_in_minute  = size
@@ -163,8 +208,12 @@ def main(filename, newfile):
             if prodid_failure >= 0:
                 prod_in_minute += 1
                 fail_in_minute += 1
+            if prodid_mcast >= 0:
+                block_in_minute += 1
+            if prodid_retx >= 0:
+                block_in_minute += 1
+                retx_in_minute  += 1
         else:
-            print 'elapse < 1 min'
             if prodid_success >= 0:
                 bytes_in_minute  += size
                 rxtime_in_minute += rxtime
@@ -172,6 +221,11 @@ def main(filename, newfile):
             if prodid_failure >= 0:
                 prod_in_minute += 1
                 fail_in_minute += 1
+            if prodid_mcast >= 0:
+                block_in_minute += 1
+            if prodid_retx >= 0:
+                block_in_minute += 1
+                retx_in_minute  += 1
 
     f.close()
     #w.close()
