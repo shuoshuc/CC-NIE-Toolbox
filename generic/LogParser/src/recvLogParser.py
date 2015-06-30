@@ -79,6 +79,29 @@ def parseSizeTime(line):
         return (-1, -1, -1)
 
 
+def parseFailure(line):
+    """Parses the log to find unsuccessfully received products.
+
+    Parses the failure message in log to find unsuccessfully received products,
+    which are caused by retransmission timeouts. Since we are not able to tell
+    whether a product is failed or simply out-of-sequence, we cannot detect
+    failure by looking at product indices. The only reliable way is the failure
+    message in log file.
+
+    Args:
+        line: A line of the raw log file.
+
+    Returns:
+        -1: If no failure message is found.
+        prodindex: Index of the product which is indicated lost.
+    """
+    failure_match = re.search(r'.*\[FAILURE\].*#(\d+)', line)
+    if failure_match:
+        return int(failure_match.group(1))
+    else:
+        return -1
+
+
 def main(filename, newfile):
     """Reads the raw log file and parses it.
 
@@ -98,6 +121,8 @@ def main(filename, newfile):
     rxtime_in_minute = 0
     basetime         = datetime.datetime(2000, 1, 1, 0, 0, 0)
     baseline         = 0
+    prod_in_minute   = 0
+    fail_in_minute   = 0
     for i, line in enumerate(f):
         timestamp_match = re.search(r'^\d+-\d+-\d+ \d+:\d+:\d+  ', line)
         print timestamp_match.group(0), 'i =', i
@@ -108,6 +133,7 @@ def main(filename, newfile):
             baseline = i
             continue
         (prodid_success, size, rxtime) = parseSizeTime(line)
+        prodid_failure = parseFailure(line)
         if checkTimeElapse(basetime, eventtime):
             print 'elapse > 1 min'
             # throughput unit is bps
@@ -118,19 +144,34 @@ def main(filename, newfile):
                 prod_based_thru = 0
             print 'minute_based_throughput =', minute_based_thru
             print 'product_based_throughput =', prod_based_thru
+            if prod_in_minute:
+                success_in_minute = prod_in_minute - fail_in_minute
+                reliability = float(success_in_minute / prod_in_minute)
+                print 'reliability =', reliability
+            # starts again for next new minute, re-initialize
             basetime = eventtime
             baseline = i
+            bytes_in_minute  = 0
+            rxtime_in_minute = 0
+            prod_in_minute   = 0
+            fail_in_minute   = 0
+            # process next new minute
             if prodid_success >= 0:
                 bytes_in_minute  = size
                 rxtime_in_minute = rxtime
-            else:
-                bytes_in_minute  = 0
-                rxtime_in_minute = 0
+                prod_in_minute   += 1
+            if prodid_failure >= 0:
+                prod_in_minute += 1
+                fail_in_minute += 1
         else:
             print 'elapse < 1 min'
             if prodid_success >= 0:
                 bytes_in_minute  += size
                 rxtime_in_minute += rxtime
+                prod_in_minute   += 1
+            if prodid_failure >= 0:
+                prod_in_minute += 1
+                fail_in_minute += 1
 
     f.close()
     #w.close()
