@@ -24,20 +24,20 @@ del() {
 
 case "$act" in
     add)
-	echo -n "adding qdisc"
-	add
-	echo "done"
-	;;
+    echo -n "adding qdisc"
+    add
+    echo "done"
+    ;;
 
     del)
-	echo -n "deleting qdisc"
-	del
-	echo "done"
-	;;
+    echo -n "deleting qdisc"
+    del
+    echo "done"
+    ;;
 
     *)
-	echo "Invalid arguments"
-	;;
+    echo "Invalid arguments"
+    ;;
 esac
 
 exit 0
