@@ -1,7 +1,7 @@
 ##
 # Copyright (C) 2015 University of Virginia. All rights reserved.
 #
-# @file      calc_delay.R
+# @file      find_index.R
 # @author    Shawn Chen <sc7cq@virginia.edu>
 # @version   1.0
 # @date      July 4, 2015
@@ -18,7 +18,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 # more details at http://www.gnu.org/copyleft/gpl.html
 #
-# @brief     Calculates the cumulative arrival time of a given period.
+# @brief     Calculates the cumulative arrival time of a given period and finds
+             its index.
 
 
 # reads raw csv file from disk
