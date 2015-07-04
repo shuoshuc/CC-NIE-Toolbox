@@ -19,7 +19,7 @@
 # more details at http://www.gnu.org/copyleft/gpl.html
 #
 # @brief     Calculates the cumulative arrival time of a given period and finds
-             its index.
+#            its index.
 
 
 # reads raw csv file from disk
