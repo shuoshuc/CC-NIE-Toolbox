@@ -178,13 +178,11 @@ def main(filename, newfile):
         prodid_retx = parseRetxData(line)
         if checkTimeElapse(basetime, eventtime):
             # throughput unit is bps
-            minute_based_thru = float(bytes_in_minute) / 60 * 8
             if rxtime_in_minute:
                 prod_based_thru = float(bytes_in_minute) / rxtime_in_minute * 8
             else:
                 prod_based_thru = 0
-            print 'minute_based_throughput =', minute_based_thru
-            print 'product_based_throughput =', prod_based_thru
+            print 'throughput =', prod_based_thru
             if prod_in_minute:
                 success_in_minute = prod_in_minute - fail_in_minute
                 reliability = float(success_in_minute / prod_in_minute) * 100
@@ -192,8 +190,8 @@ def main(filename, newfile):
             if block_in_minute:
                 retx_rate = float(retx_in_minute / block_in_minute) * 100
                 print 'retx rate =', retx_rate
-            tmp_str = str(minute_based_thru) + ',' + str(prod_based_thru) \
-                    + ',' + str(reliability) + ',' + str(retx_rate) + '\n'
+            tmp_str = str(prod_based_thru) + ',' + str(reliability) + ',' \
+                    + str(retx_rate) + '\n'
             w.write(tmp_str)
             # starts again for next new minute, re-initialize
             basetime = eventtime
