@@ -26,6 +26,7 @@ usage     python recvLogParser.py <logfile-to-read> <newfile-to-write>
 """
 
 
+from __future__ import division
 import re
 import sys
 import datetime
