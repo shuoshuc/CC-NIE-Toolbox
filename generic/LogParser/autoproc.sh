@@ -26,34 +26,19 @@
 filebase=$1
 logbase=$2
 log=".log"
-rawcsv="-raw.csv"
+csv=".csv"
 
 # parses all the raw log files one by one
-for i in {1..10}
+#for i in {1..10}
+for i in {1..1}
 do
     echo "---------- processing log$i ----------"
-    python recvLogParser.py $filebase$i$log $logbase$i$rawcsv
-done
-
-
-csv=".csv"
-#host="PSC,"
-host="UCD,"
-# delay and loss both in percentage
-delay="0,"
-loss="0,"
-# RTT in ms
-rtt="90,"
-
-# concatenates the constant columns to each csv
-for i in {1..10}
-do
-    while IFS='' read -r line || [[ -n $line ]]; do
-        echo "$host$delay$loss$rtt$line" >> "$logbase$i$csv"
-    done < "$logbase$i$rawcsv"
+    python recvLogParser.py $filebase$i$log $logbase$i$csv
+    sed -i -e \
+        '1ithroughput (bps), reliability (%), block retransmission rate (%)\' \
+        $logbase$i$csv
 done
 
 # clean up
-mkdir ucd-csv
-rm *raw.csv
-mv *.csv ucd-csv
+mkdir csv
+mv *.csv csv
