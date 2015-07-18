@@ -317,6 +317,14 @@ def main(metadata, logfile, csvfile):
     (tx_groups, tx_sizes) = aggregate(metadata, aggregate_size)
     (rx_noloss, rx_success_set, rx_success_dict, rx_failed, rx_mcast,
      rx_retx) = extractLog(logfile)
+    tmp_str = 'Sent first prodindex, Sent last prodindex, Sender aggregate ' \
+              'size (B), Successfully received aggregate size (B), Lossless ' \
+              'throughput (bps), Successful throughput (bps), Ratio of ' \
+              'lossless products (%), Number of lossless products, Ratio of ' \
+              'successful products (%), Number of successful products, Ratio ' \
+              'of failed products (%), Number of failed products, Block ' \
+              'retransmission rate (%)' + '\n'
+    w.write(tmp_str)
     for group, size in zip(tx_groups, tx_sizes):
         (thru_lossless, thru_complete, rx_group_size) = calcThroughput(
             set(group), rx_noloss, rx_success_set, rx_success_dict)
