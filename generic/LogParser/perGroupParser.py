@@ -221,7 +221,7 @@ def calcThroughput(tx_group, lossless, complete_set, complete_dict):
         complete_dict: Dict of complete products.
 
     Returns:
-        (thru_lossless, thru_complete, complete_size): calculated values.
+        (thru_lossless, thru_complete, complete_size): calculated throughputs.
     """
     lossless_size = 0
     lossless_time = 0
@@ -246,6 +246,36 @@ def calcThroughput(tx_group, lossless, complete_set, complete_dict):
     return (thru_lossless, thru_complete, complete_size)
 
 
+def calcRatio(tx_group, lossless, complete_set, failed):
+    """Calculates ratios for an aggregate.
+
+    Calculates ratios including lossless ratio, complete ratio and block retx
+    ratio in an aggregate.
+
+    Args:
+        tx_group: Aggregate group.
+        lossless: Group of lossless products.
+        complete_set: Set of complete products.
+        complete_dict: Dict of complete products.
+
+    Returns:
+        (lossless_ratio, complete_ratio, failed_ratio): calculated ratios.
+    """
+    aggregate_num = len(tx_group)
+    lossless_num  = len(tx_group & lossless)
+    complete_num  = len(tx_group & complete_set)
+    failed_num    = len(tx_group & failed)
+    if aggregate_num:
+        lossless_ratio = float(lossless_num / aggregate_num) * 100
+        complete_ratio = float(complete_num / aggregate_num) * 100
+        failed_ratio   = float(failed_num / aggregate_num) * 100
+    else:
+        lossless_ratio = -1
+        complete_ratio = -1
+        failed_ratio   = -1
+    return (lossless_ratio, complete_ratio, failed_ratio)
+
+
 def main(metadata, logfile, csvfile):
     """Reads the raw log file and parses it.
 
@@ -264,7 +294,11 @@ def main(metadata, logfile, csvfile):
     for group in tx_groups:
         (thru_lossless, thru_complete, rx_group_size) = calcThroughput(
             set(group), rx_noloss, rx_success_set, rx_success_dict)
-        print thru_lossless
+        (lossless_ratio, complete_ratio, failed_ratio) = calcRatio(set(group),
+            rx_noloss, rx_success_set, rx_failed)
+        lossless_num = len(set(group) & rx_noloss)
+        failed_num   = len(set(group) & rx_failed)
+        print thru_lossless, thru_complete, rx_group_size, lossless_ratio, complete_ratio, failed_ratio
     #w = open(newfile, 'w+')
     #tmp_str = str(prod_based_thru) + ',' + str(reliability) + ',' \
     #        + str(retx_rate) + '\n'
