@@ -166,12 +166,14 @@ def extractLog(filename):
         filename: Filename of the log file.
 
     Returns:
-        (lossless, complete, failed, mcast, retx): extracted groups.
+        (lossless, complete_set, complete_dict, failed, mcast, retx):
+        extracted groups.
     """
     # lossless is the group endured no loss.
     lossless = set()
     # complete is the group completely received products with or without loss.
-    complete = set()
+    complete_set  = set()
+    complete_dict = {}
     # failed is the group of not completely received products.
     failed   = set()
     # mcast is a dict containing the mcast blocks of each product.
@@ -185,8 +187,9 @@ def extractLog(filename):
             prodid_mcast = parseMcastData(line)
             prodid_retx = parseRetxData(line)
             if prodid_success >= 0:
-                lossless |= {prodid_success}
-                complete |= {prodid_success}
+                complete_set |= {prodid_success}
+                if not complete_dict.has_key(prodid_success):
+                    complete_dict[prodid_success] = (size, rxtime)
             if prodid_failure >= 0:
                 failed |= {prodid_failure}
             if prodid_mcast >= 0:
@@ -201,8 +204,46 @@ def extractLog(filename):
                     retx[prodid_retx] = 1
     logfile.close()
     retx_set = set(retx.keys())
-    lossless -= retx_set
-    return (lossless, complete, failed, mcast, retx)
+    lossless = complete_set - retx_set
+    return (lossless, complete_set, complete_dict, failed, mcast, retx)
+
+
+def calcThroughput(tx_group, lossless, complete_set, complete_dict):
+    """Calculates throughput for an aggregate.
+
+    Calculates throughput for a lossless group which fits into the aggregate
+    size and also cumulates the group size.
+
+    Args:
+        tx_group: Aggregate group.
+        lossless: Group of lossless products.
+        complete_set: Set of complete products.
+        complete_dict: Dict of complete products.
+
+    Returns:
+        (thru_lossless, thru_complete, complete_size): calculated values.
+    """
+    lossless_size = 0
+    lossless_time = 0
+    complete_size = 0
+    complete_time = 0
+    thru_lossless = 0
+    thru_complete = 0
+    for i in tx_group & complete_set:
+        complete_size += complete_dict[i][0]
+        complete_time += complete_dict[i][1]
+        if i in tx_group & lossless:
+            lossless_size += complete_dict[i][0]
+            lossless_time += complete_dict[i][1]
+    if lossless_time:
+        thru_lossless = float(lossless_size / lossless_time) * 8
+    else:
+        thru_lossless = -1
+    if complete_time:
+        thru_complete = float(complete_size / complete_time) * 8
+    else:
+        thru_complete = -1
+    return (thru_lossless, thru_complete, complete_size)
 
 
 def main(metadata, logfile, csvfile):
@@ -216,8 +257,14 @@ def main(metadata, logfile, csvfile):
         logfile: Filename of the log file.
         csvfile : Filename of the new file to contain output results.
     """
-    (tx_groups, tx_sizes) = aggregate(metadata, 1024*1024)
-    (rx_noloss, rx_success, rx_failed, rx_mcast, rx_retx) = extractLog(logfile)
+    aggregate_size = 1024 * 1024
+    (tx_groups, tx_sizes) = aggregate(metadata, aggregate_size)
+    (rx_noloss, rx_success_set, rx_success_dict, rx_failed, rx_mcast,
+     rx_retx) = extractLog(logfile)
+    for group in tx_groups:
+        (thru_lossless, thru_complete, rx_group_size) = calcThroughput(
+            set(group), rx_noloss, rx_success_set, rx_success_dict)
+        print thru_lossless
     #w = open(newfile, 'w+')
     #tmp_str = str(prod_based_thru) + ',' + str(reliability) + ',' \
     #        + str(retx_rate) + '\n'
