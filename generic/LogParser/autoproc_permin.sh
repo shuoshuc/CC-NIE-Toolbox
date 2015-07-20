@@ -2,7 +2,7 @@
 ##
 # Copyright (C) 2015 University of Virginia. All rights reserved.
 #
-# @file      autoproc.sh
+# @file      autoproc_permin.sh
 # @author    Shawn Chen <sc7cq@virginia.edu>
 # @version   1.0
 # @date      July 8, 2015
@@ -20,7 +20,8 @@
 # more details at http://www.gnu.org/copyleft/gpl.html
 #
 # @brief     Automatically parses the raw log file and generates csv.
-# @usage     ./autoproc.sh <basename-of-logfile> <experiment number> <hostname>
+# @usage     ./autoproc_permin.sh <basename-of-logfile> <experiment number> \
+#            <hostname>
 
 
 filebase=$1
