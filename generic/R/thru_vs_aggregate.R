@@ -35,17 +35,18 @@ for(i in 1:10)
   assign(varname, get(varname)[[5]])
   # merge throughput into a vector
   thru_1MB <- c(thru_1MB, get(varname))
-  # convert throughput from bps to Mbps
-  thru_1MB <- thru_1MB / 1000000
 }
+# convert throughput from bps to Mbps
+thru_1MB <- thru_1MB / 1000000
+
 
 # For plot
 boxlist <- list('1'=thru_1MB, '10'=thru_10MB, '20'=thru_20MB, '30'=thru_30MB,
                 '50'=thru_50MB, '100'=thru_100MB, '200'=thru_200MB)
 plotcol <- c('blue', 'yellow', 'red', 'forestgreen', 'purple', 'dodgerblue',
              'darkorange')
+options(scipen=10)
+boxplot(boxlist, col=plotcol, las=1)
 title('Throughput vs. Aggregate Size Plot', xlab='Aggregate Size (MB)',
       ylab='Lossless Throughput per Aggregate (Mbps)')
 mtext('10 runs from Expt1-PSC')
-options(scipen=10)
-boxplot(boxlist, col=plotcol, las=1)
