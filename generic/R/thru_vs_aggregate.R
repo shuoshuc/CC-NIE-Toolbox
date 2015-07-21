@@ -33,5 +33,8 @@ for(i in 1:10)
   oname <- paste(fullname, i, sep="")
   assign(varname, read.csv(paste(oname, ".csv", sep="")))
   assign(varname, get(varname)[[5]])
+  # merge throughput into a vector
   thru_1MB <- c(thru_1MB, get(varname))
+  # convert throughput from bps to Mbps
+  thru_1MB <- thru_1MB / 1000000
 }
