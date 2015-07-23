@@ -2,7 +2,7 @@
 # Hierarchical tc rate limiter. It limits the traffic that matches the tc
 # filter rules using TBF. For the other traffic that does not match, it is
 # served by pfifo without any limit.
-# Usage: sudo sh tbfrate.sh add ethN 10mbit 10kb 2ms
+# Usage: sudo sh tc_separate.sh
 
 const="inet addr:"
 bindip=`hostname -I | awk -F ' ' '{print $2}'`
