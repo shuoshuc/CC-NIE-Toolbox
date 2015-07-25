@@ -3,8 +3,10 @@
 # date: July 10, 2015
 # Sets iptables to drop packets with a probability
 # Usage: ./iptables_drop.sh add INPUT
-# Usage: ./iptables_drop.sh del OUTPUT
+# Usage: ./iptables_drop.sh del INPUT
+# For outgoing packet losses, replace INPUT with OUTPUT
 
+# action, add or del
 act=$1
 # direction of the traffic
 dir=$2
