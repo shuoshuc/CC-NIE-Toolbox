@@ -1,13 +1,22 @@
 #!/bin/sh
-# Hierarchical tc rate limiter. It limits the traffic that matches the tc
-# filter rules using TBF. For the other traffic that does not match, it is
-# served by pfifo without any limit.
+# Created by: Shawn <schen@virginia.edu>
+# Date: July 23, 2015
+# Hierarchical tc rate limiter. It limits the traffic using HTB. A tc filter
+# is applied to separate multicast and other traffic. For the multicast traffic,
+# it is limited to rsnd but can borrow from the rest bandwidth. For the other
+# traffic that does not fall into rsnd, it is limited to be rvlan - rsnd.
+#
 # Usage: sudo sh tc_separate.sh
 
-rvlan=500mbit
+rvlan=200mbit
 rsnd=50mbit
-residue=450mbit
-export NIC=eth0
+residue=150mbit
+
+const="inet addr:"
+bindip=`hostname -I | awk -F ' ' '{print $2}'`
+iface=$(ifconfig | grep -B1 "$const$bindip" | awk '$1!="inet" && $1!="--" {print $1}')
+export NIC=$iface
+
 tc qdisc add dev $NIC root handle 1: htb default 11
 tc class add dev $NIC parent 1: classid 1:1 htb rate $rvlan ceil $rvlan
 tc class add dev $NIC parent 1:1 classid 1:10 htb rate $rsnd ceil $rvlan
