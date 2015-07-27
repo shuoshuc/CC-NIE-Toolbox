@@ -6,11 +6,11 @@
 # it is limited to rsnd but can borrow from the rest bandwidth. For the other
 # traffic that does not fall into rsnd, it is limited to be rvlan - rsnd.
 #
-# Usage: sudo sh tc_separate.sh
+# Usage: sudo sh tc_htb.sh
 
-rvlan=200mbit
+rvlan=100mbit
 rsnd=50mbit
-residue=150mbit
+residue=50mbit
 
 const="inet addr:"
 bindip=`hostname -I | awk -F ' ' '{print $2}'`
