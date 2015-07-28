@@ -20,6 +20,9 @@ export NIC=$iface
 tc qdisc add dev $NIC root handle 1: htb default 11
 tc class add dev $NIC parent 1: classid 1:1 htb rate $rvlan ceil $rvlan
 tc class add dev $NIC parent 1:1 classid 1:10 htb rate $rsnd ceil $rvlan
+tc qdisc add dev $NIC parent 1:10 handle 10: bfifo limit 600mb
 tc class add dev $NIC parent 1:1 classid 1:11 htb rate $residue ceil $rvlan
+tc qdisc add dev $NIC parent 1:11 handle 11: bfifo limit 600mb
+
 tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 224.0.0.1/32 flowid 1:10
 tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 0/0 flowid 1:11
