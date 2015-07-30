@@ -34,4 +34,9 @@ ntpdate -q pool.ntp.org
 service ntpd start
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p
+const="inet addr:"
+bindip=`hostname -I | awk -F ' ' '{print $2}'`
+iface=$(ifconfig | grep -B1 "$const$bindip" | awk '$1!="inet" && $1!="--" {print $1}')
+export NIC=$iface
+route add 224.0.0.1 dev $NIC
 git clone https://github.com/Unidata/vcmtp.git
