@@ -6,11 +6,11 @@
 # it is limited to rsnd but can borrow from the rest bandwidth. For the other
 # traffic that does not fall into rsnd, it is limited to be rvlan - rsnd.
 #
-# Usage: sudo sh tc_separate.sh
+# Usage: sudo sh tc_htb.sh
 
-rvlan=200mbit
+rvlan=100mbit
 rsnd=50mbit
-residue=150mbit
+residue=50mbit
 
 const="inet addr:"
 bindip=`hostname -I | awk -F ' ' '{print $2}'`
@@ -20,6 +20,9 @@ export NIC=$iface
 tc qdisc add dev $NIC root handle 1: htb default 11
 tc class add dev $NIC parent 1: classid 1:1 htb rate $rvlan ceil $rvlan
 tc class add dev $NIC parent 1:1 classid 1:10 htb rate $rsnd ceil $rvlan
+tc qdisc add dev $NIC parent 1:10 handle 10: bfifo limit 600mb
 tc class add dev $NIC parent 1:1 classid 1:11 htb rate $residue ceil $rvlan
+tc qdisc add dev $NIC parent 1:11 handle 11: bfifo limit 600mb
+
 tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 224.0.0.1/32 flowid 1:10
 tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 0/0 flowid 1:11

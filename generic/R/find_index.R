@@ -27,7 +27,7 @@ ngrid <- read.csv('~/Workspace/IDD_replay/day1NGRID.csv')
 # extracts the second column, which is the arrival time
 arrival <- ngrid[2]
 # sets cumulative arrival time (one hour)
-cumulative <- 3600000
+cumulative <- 24000000
 # finds the first arrival time that is longer than one hour
 one_hr <- min(arrival[apply(arrival, 1, function(row) {all(row > cumulative)}),])
 # finds the index of the first match
