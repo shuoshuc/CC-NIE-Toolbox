@@ -313,7 +313,7 @@ def main(metadata, logfile, csvfile):
         csvfile : Filename of the new file to contain output results.
     """
     w = open(csvfile, 'w+')
-    aggregate_size = 1024 * 1024
+    aggregate_size = 10 * 1024 * 1024
     (tx_groups, tx_sizes) = aggregate(metadata, aggregate_size)
     (rx_noloss, rx_success_set, rx_success_dict, rx_failed, rx_mcast,
      rx_retx) = extractLog(logfile)
