@@ -30,6 +30,7 @@ yum -y update
 yum -y install devtoolset-2-gcc devtoolset-2-binutils devtoolset-2-gcc-c++
 rm /usr/bin/g++
 ln -s /opt/rh/devtoolset-2/root/usr/bin/g++ /usr/bin
+yum install -y ntp ntpdate
 ntpdate -q pool.ntp.org
 service ntpd start
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
