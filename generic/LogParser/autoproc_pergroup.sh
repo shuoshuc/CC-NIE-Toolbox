@@ -24,15 +24,15 @@
 #            <experiment number> <hostname>
 
 
-metadata=$1
-filebase=$2
-exptno=$3
-host=$4
-CORENUM=4
+export metadata=$1
+export filebase=$2
+export exptno=$3
+export host=$4
+CORENUM=8
 
 parselog() {
     echo "---------- processing log$1 ----------"
-    python perGroupParser.py $metadata $filebase$1".log" "Expt"$exptno"-"$host"-run"$1".csv"
+    python perGroupParser.py $metadata $filebase$1'.log' 'Expt'$exptno'-'$host'-run'$1'.csv'
 }
 export -f parselog
 
