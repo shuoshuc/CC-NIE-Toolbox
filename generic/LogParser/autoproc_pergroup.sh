@@ -20,26 +20,24 @@
 # more details at http://www.gnu.org/copyleft/gpl.html
 #
 # @brief     Automatically parses the raw log file and generates csv.
-# @usage     ./autoproc_pergroup.sh <basename-of-logfile> <experiment number> \
-#            <hostname>
+# @usage     ./autoproc_pergroup.sh <metadata> <basename-of-logfile> \
+#            <experiment number> <hostname>
 
 
 metadata=$1
 filebase=$2
 exptno=$3
 host=$4
-exp="Expt"
-dash="-"
-log=".log"
-csv=".csv"
-run="-run"
+CORENUM=4
 
-# parses all the raw log files one by one
-for i in {1..10}
-do
-    echo "---------- processing log$i ----------"
-    python perGroupParser.py $metadata $filebase$i$log $exp$exptno$dash$host$run$i$csv
-done
+parselog() {
+    echo "---------- processing log$1 ----------"
+    python perGroupParser.py $metadata $filebase$1".log" "Expt"$exptno"-"$host"-run"$1".csv"
+}
+export -f parselog
+
+# parses all the raw log files in parallel (using $CORENUM processes)
+seq 1 10 | xargs -n 1 -P $CORENUM bash -c 'parselog "$@"' --
 
 # clean up
 mkdir csv
