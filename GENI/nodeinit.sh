@@ -35,6 +35,9 @@ ntpdate -q pool.ntp.org
 service ntpd start
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p
+cp CC-NIE-Toolbox/GENI/centos-extras.repo /etc/yum.repo.d/
+yum -i install python27 centos-release-SCL
+scl enable python27 bash
 const="inet addr:"
 bindip=`hostname -I | awk -F ' ' '{print $2}'`
 iface=$(ifconfig | grep -B1 "$const$bindip" | awk '$1!="inet" && $1!="--" {print $1}')
