@@ -36,7 +36,7 @@ service ntpd start
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p
 cp CC-NIE-Toolbox/GENI/centos-extras.repo /etc/yum.repo.d/
-yum -i install python27 centos-release-SCL
+yum -y install python27 centos-release-SCL
 scl enable python27 bash
 const="inet addr:"
 bindip=`hostname -I | awk -F ' ' '{print $2}'`
