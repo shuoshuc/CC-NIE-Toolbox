@@ -2,10 +2,10 @@
 
 # Copyright (C) 2015 University of Virginia. All rights reserved.
 #
-# @file      nodeinit.sh
+# @file      old-nodeinit.sh
 # @author    Shawn Chen <sc7cq@virginia.edu>
 # @version   1.0
-# @date      August 10, 2015
+# @date      June 24, 2015
 #
 # @section   LICENSE
 #
@@ -25,9 +25,19 @@
 # @brief    GENI node initialization
 
 
+wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo
 yum -y update
+yum -y install devtoolset-2-gcc devtoolset-2-binutils devtoolset-2-gcc-c++
+rm /usr/bin/g++
+ln -s /opt/rh/devtoolset-2/root/usr/bin/g++ /usr/bin
+yum install -y ntp ntpdate
+ntpdate -q pool.ntp.org
+service ntpd start
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p
+cp CC-NIE-Toolbox/GENI/centos-extras.repo /etc/yum.repo.d/
+yum -y install python27 centos-release-SCL
+scl enable python27 bash
 const="inet addr:"
 bindip=`hostname -I | awk -F ' ' '{print $2}'`
 iface=$(ifconfig | grep -B1 "$const$bindip" | awk '$1!="inet" && $1!="--" {print $1}')
