@@ -26,6 +26,7 @@
 
 
 yum -y update
+yum -y install mosh
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p
 const="inet addr:"
