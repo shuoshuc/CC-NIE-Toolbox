@@ -28,11 +28,11 @@ export metadata=$1
 export filebase=$2
 export exptno=$3
 export host=$4
-CORENUM=8
+CORENUM=10
 
 parselog() {
     echo "---------- processing log$1 ----------"
-    python perGroupParser.py $metadata $filebase$1'.log' 'Expt'$exptno'-'$host'-run'$1'.csv'
+    python2.7 perGroupParser.py $metadata $filebase$1'.log' 'Expt'$exptno'-'$host'-run'$1'.csv'
 }
 export -f parselog
 
