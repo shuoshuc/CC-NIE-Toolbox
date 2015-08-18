@@ -22,9 +22,9 @@
 
 
 path <- "~/Workspace/VCMTP_LOG/"
-expt <- "11"
-node <- "1"
-host <- "OSF"
+expt <- "13"
+node <- "2"
+host <- "TAMU"
 prefix <- paste(path, "Expt-", expt, "/recv-node", node, "/", sep="")
 filename <- paste("Expt", expt, "-", host, "-run", sep="")
 varprefix <- paste("Expt", expt, "_recvnode", node, "_run", sep="")
@@ -52,10 +52,38 @@ assign(thrumatrix, thru_mat)
 
 # For plot
 options(scipen=10)
-#red
-boxplot(t(Expt11_recvnode1_thrumatrix), las = 1, outline = FALSE)
-#blue
-boxplot(t(Expt11_recvnode2_thrumatrix), las = 1, outline = FALSE)
-title('', xlab='',
-      ylab='')
-mtext('')
+boxplot(t(Expt13_recvnode1_thrumatrix), las = 1, outline = FALSE)
+boxplot(t(Expt13_recvnode2_thrumatrix), las = 1, outline = FALSE)
+boxplot(t(Expt13_recvnode1_ratiomatrix), las = 1, outline = FALSE)
+boxplot(t(Expt13_recvnode2_ratiomatrix), las = 1, outline = FALSE)
+
+# throughput
+par(mfrow = c(2,1))
+par(mar = c(3.5, 4, 3, 1))
+boxplot(Expt13_recvnode1_thrumatrix, las = 1, outline = FALSE, cex.axis = 0.8)
+title(main = expression(paste("Throughput across 400 minutes, ", f[rcv],
+                              " = 2    (recv1)")), cex.main = 1.1)
+mtext("Group number", side = 1, line = 2.3)
+mtext("Successful throughput (Mbps)", side = 2, line = 2.7)
+
+boxplot(Expt13_recvnode2_thrumatrix, las = 1, outline = FALSE, cex.axis = 0.8)
+title(main = expression(paste("Throughput across 400 minutes, ", f[rcv],
+                              " = 2    (recv2)")), cex.main = 1.1)
+mtext("Group number", side = 1, line = 2.3)
+mtext("Successful throughput (Mbps)", side = 2, line = 2.7)
+
+
+# block retx ratio
+par(mfrow = c(2,1))
+par(mar = c(3.5, 4.5, 3, 1))
+boxplot(Expt13_recvnode1_ratiomatrix, las = 1, outline = FALSE, cex.axis = 0.8)
+title(main = expression(paste("Block retx ratio across 400 minutes, ", f[rcv],
+                              " = 2     (recv1)")), cex.main = 1.1)
+mtext("Group number", side = 1, line = 2.3)
+mtext("Block retx ratio (%)", side = 2, line = 3.2)
+
+boxplot(Expt13_recvnode2_ratiomatrix, las = 1, outline = FALSE, cex.axis = 0.8)
+title(main = expression(paste("Block retx ratio across 400 minutes, ", f[rcv],
+                              " = 2    (recv2)")), cex.main = 1.1)
+mtext("Group number", side = 1, line = 2.3)
+mtext("Block retx ratio (%)", side = 2, line = 3.2)
