@@ -27,6 +27,7 @@
 
 yum -y update
 yum -y install mosh
+ntpdate pool.ntp.org
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p
 const="inet addr:"
