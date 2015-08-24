@@ -23,7 +23,19 @@ more details at http://www.gnu.org/copyleft/gpl.html
 brief     Launches batch job for VCMTP test experiments.
 """
 
-from fabric.api import run
+import sys
+from fabric.api import env, run
+
+def read_hosts():
+    """
+    Reads hosts IP from sys.stdin line by line, expecting one per line.
+    """
+    env.hosts = []
+    for line in sys.stdin.readlines():
+        host = line.strip()
+        if host and not host.startswith("#"):
+            host = 'root@' + host
+            env.hosts.append(host)
 
 def runexpt_send():
     run('git clone https://github.com/shawnsschen/CC-NIE-Toolbox.git')
@@ -36,3 +48,16 @@ def runexpt_recv():
     run('git clone https://github.com/Unidata/vcmtp.git')
     run('cd ~/vcmtp/VCMTPv3/receiver/ && make -f Makefile_recv')
     run('cd ~/vcmtp/VCMTPv3/receiver/ && ./startTestRecvApp.sh', pty=False)
+
+def query_send():
+    run('tail -n 3 ~/vcmtp/VCMTPv3/sender/*.log')
+
+def query_recv():
+    run('tail -n 3 ~/vcmtp/VCMTPv3/receiver/logs/*.log')
+
+def terminate_recv():
+    run('pkill testRecvApp')
+    run('rm -r ~/vcmtp')
+
+def simple_task():
+    run("uptime")
