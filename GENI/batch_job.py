@@ -49,6 +49,21 @@ def runexpt_recv():
     run('cd ~/vcmtp/VCMTPv3/receiver/ && make -f Makefile_recv')
     run('cd ~/vcmtp/VCMTPv3/receiver/ && ./startTestRecvApp.sh', pty=False)
 
+def countrun():
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && grep -E "\[MCAST\ BOP\].*#0:" *.log | wc -l')
+
+def splitlog():
+    #run('git clone https://github.com/shawnsschen/CC-NIE-Toolbox.git')
+    run('cp ~/CC-NIE-Toolbox/generic/LogParser/split.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && sh split.sh VCMTPv3_RECEIVER_centos.log VCMTPv3_RECEIVER_centos_run')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && rm split.sh && ls')
+
+def parselog():
+    run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
+    run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && sh autoproc_pergroup.sh VCMTPv3_RECEIVER_centos_run 20 WAN')
+
 def query_send():
     run('tail -n 3 ~/vcmtp/VCMTPv3/sender/*.log')
 
