@@ -45,8 +45,8 @@ def runexpt_send():
     run('cd ~/vcmtp/VCMTPv3/sender/ && ./startTestSendApp.sh', pty=False)
 
 def runexpt_recv():
-    run('git clone https://github.com/Unidata/vcmtp.git')
-    run('cd ~/vcmtp/VCMTPv3/receiver/ && make -f Makefile_recv')
+    #run('git clone https://github.com/Unidata/vcmtp.git')
+    #run('cd ~/vcmtp/VCMTPv3/receiver/ && make -f Makefile_recv')
     run('cd ~/vcmtp/VCMTPv3/receiver/ && ./startTestRecvApp.sh', pty=False)
 
 def countrun():
@@ -62,7 +62,7 @@ def parselog():
     run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
     run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
     run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
-    run("cd ~/vcmtp/VCMTPv3/receiver/logs/ && scl enable python27 'sh autoproc_pergroup.sh VCMTPv3_RECEIVER_centos_run 20 WAN'")
+    run("scl enable python27 'cd ~/vcmtp/VCMTPv3/receiver/logs/ && sh autoproc_pergroup.sh VCMTPv3_RECEIVER_centos_run 20 WAN'")
 
 def query_send():
     run('tail -n 3 ~/vcmtp/VCMTPv3/sender/*.log')
@@ -71,8 +71,12 @@ def query_recv():
     run('tail -n 3 ~/vcmtp/VCMTPv3/receiver/logs/*.log')
 
 def terminate_recv():
-    run('pkill testRecvApp')
-    run('rm -r ~/vcmtp')
+    run('pkill testRecvApp || true')
+    #run('rm -r ~/vcmtp')
+
+def addloss():
+    run("iptables -A INPUT -m statistic --mode random --probability 0.01 -p udp --dport 5173 -j DROP")
+    #run("iptables -L")
 
 def simple_task():
-    run("uptime")
+    run("ps aux | grep test")
