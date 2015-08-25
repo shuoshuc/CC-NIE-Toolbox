@@ -62,7 +62,7 @@ def parselog():
     run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
     run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
     run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && sh autoproc_pergroup.sh VCMTPv3_RECEIVER_centos_run 20 WAN')
+    run("cd ~/vcmtp/VCMTPv3/receiver/logs/ && scl enable python27 'sh autoproc_pergroup.sh VCMTPv3_RECEIVER_centos_run 20 WAN'")
 
 def query_send():
     run('tail -n 3 ~/vcmtp/VCMTPv3/sender/*.log')
