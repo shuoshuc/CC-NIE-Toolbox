@@ -23,8 +23,13 @@ more details at http://www.gnu.org/copyleft/gpl.html
 brief     Launches batch job for VCMTP test experiments.
 """
 
+import logging
 import sys
 from fabric.api import env, run
+
+logging.basicConfig()
+paramiko_logger = logging.getLogger("paramiko.transport")
+paramiko_logger.disabled = True
 
 def read_hosts():
     """
