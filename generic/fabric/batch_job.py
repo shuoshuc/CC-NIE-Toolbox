@@ -77,11 +77,15 @@ def query_recv():
 
 def terminate_recv():
     run('pkill testRecvApp || true')
+    #run('rm -r ~/vcmtp/VCMTPv3/receiver/logs')
     #run('rm -r ~/vcmtp')
 
 def addloss():
     run("iptables -A INPUT -m statistic --mode random --probability 0.01 -p udp --dport 5173 -j DROP")
     #run("iptables -L")
 
-def simple_task():
+def checkalive():
     run("ps aux | grep test")
+
+def simple_task():
+    run("yum -y install pv nc")
