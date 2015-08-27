@@ -88,4 +88,4 @@ def checkalive():
     run("ps aux | grep test")
 
 def simple_task():
-    run("yum -y install pv nc")
+    run("cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls")
