@@ -59,15 +59,17 @@ def countrun():
 
 def splitlog():
     #run('git clone https://github.com/shawnsschen/CC-NIE-Toolbox.git')
-    run('cp ~/CC-NIE-Toolbox/generic/LogParser/split.sh ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && sh split.sh VCMTPv3_RECEIVER_centos.log VCMTPv3_RECEIVER_centos_run')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && rm split.sh && ls')
+    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/split.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && echo "nohup sh split.sh VCMTPv3_RECEIVER_centos.log VCMTPv3_RECEIVER_centos_run &> /dev/null &" > run.sh && chmod +x run.sh')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ./run.sh', pty=False)
 
 def parselog():
-    run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
-    run("scl enable python27 'cd ~/vcmtp/VCMTPv3/receiver/logs/ && sh autoproc_pergroup.sh VCMTPv3_RECEIVER_centos_run 20 WAN'")
+    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
+    #run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
+    #run('cd ~/CC-NIE-Toolbox/ && git pull')
+    #run('cp ~/CC-NIE-Toolbox/GENI/parse.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ./parse.sh', pty=False)
 
 def query_send():
     run('tail -n 3 ~/vcmtp/VCMTPv3/sender/*.log')
@@ -88,4 +90,6 @@ def checkalive():
     run("ps aux | grep test")
 
 def simple_task():
-    run("cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls")
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && rm split.sh && rm run.sh && rm VCMTPv3_RECEIVER_centos.log && ls')
+    #run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls -l | wc -l')
+    #run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls -lh')
