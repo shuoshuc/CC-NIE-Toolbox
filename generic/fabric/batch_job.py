@@ -23,8 +23,13 @@ more details at http://www.gnu.org/copyleft/gpl.html
 brief     Launches batch job for VCMTP test experiments.
 """
 
+import logging
 import sys
 from fabric.api import env, run
+
+logging.basicConfig()
+paramiko_logger = logging.getLogger("paramiko.transport")
+paramiko_logger.disabled = True
 
 def read_hosts():
     """
@@ -45,8 +50,8 @@ def runexpt_send():
     run('cd ~/vcmtp/VCMTPv3/sender/ && ./startTestSendApp.sh', pty=False)
 
 def runexpt_recv():
-    run('git clone https://github.com/Unidata/vcmtp.git')
-    run('cd ~/vcmtp/VCMTPv3/receiver/ && make -f Makefile_recv')
+    #run('git clone https://github.com/Unidata/vcmtp.git')
+    #run('cd ~/vcmtp/VCMTPv3/receiver/ && make -f Makefile_recv')
     run('cd ~/vcmtp/VCMTPv3/receiver/ && ./startTestRecvApp.sh', pty=False)
 
 def countrun():
@@ -54,15 +59,17 @@ def countrun():
 
 def splitlog():
     #run('git clone https://github.com/shawnsschen/CC-NIE-Toolbox.git')
-    run('cp ~/CC-NIE-Toolbox/generic/LogParser/split.sh ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && sh split.sh VCMTPv3_RECEIVER_centos.log VCMTPv3_RECEIVER_centos_run')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && rm split.sh && ls')
+    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/split.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && echo "nohup sh split.sh VCMTPv3_RECEIVER_centos.log VCMTPv3_RECEIVER_centos_run &> /dev/null &" > run.sh && chmod +x run.sh')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ./run.sh', pty=False)
 
 def parselog():
-    run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
-    run("cd ~/vcmtp/VCMTPv3/receiver/logs/ && scl enable python27 'sh autoproc_pergroup.sh VCMTPv3_RECEIVER_centos_run 20 WAN'")
+    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
+    #run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
+    #run('cd ~/CC-NIE-Toolbox/ && git pull')
+    #run('cp ~/CC-NIE-Toolbox/GENI/parse.sh ~/vcmtp/VCMTPv3/receiver/logs/')
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ./parse.sh', pty=False)
 
 def query_send():
     run('tail -n 3 ~/vcmtp/VCMTPv3/sender/*.log')
@@ -71,8 +78,18 @@ def query_recv():
     run('tail -n 3 ~/vcmtp/VCMTPv3/receiver/logs/*.log')
 
 def terminate_recv():
-    run('pkill testRecvApp')
-    run('rm -r ~/vcmtp')
+    run('pkill testRecvApp || true')
+    #run('rm -r ~/vcmtp/VCMTPv3/receiver/logs')
+    #run('rm -r ~/vcmtp')
+
+def addloss():
+    run("iptables -A INPUT -m statistic --mode random --probability 0.01 -p udp --dport 5173 -j DROP")
+    #run("iptables -L")
+
+def checkalive():
+    run("ps aux | grep test")
 
 def simple_task():
-    run("uptime")
+    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && rm split.sh && rm run.sh && rm VCMTPv3_RECEIVER_centos.log && ls')
+    #run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls -l | wc -l')
+    #run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls -lh')
