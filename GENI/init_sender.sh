@@ -40,14 +40,13 @@ rvlan=100mbit
 rsnd=40mbit
 residue=60mbit
 
-tc qdisc add dev $NIC root handle 1: htb default 11
-tc class add dev $NIC parent 1: classid 1:1 htb rate $rvlan ceil $rvlan
-tc class add dev $NIC parent 1:1 classid 1:10 htb rate $rsnd ceil $rvlan
-tc qdisc add dev $NIC parent 1:10 handle 10: bfifo limit 600mb
-tc class add dev $NIC parent 1:1 classid 1:11 htb rate $residue ceil $rvlan
-tc qdisc add dev $NIC parent 1:11 handle 11: bfifo limit 600mb
+tc qdisc add dev $NIC root handle 1: htb default 2
+tc class add dev $NIC parent 1: classid 1:1 htb rate $rsnd ceil $rsnd
+tc qdisc add dev $NIC parent 1:1 handle 10: bfifo limit 600mb
+tc class add dev $NIC parent 1: classid 1:2 htb rate $residue ceil $residue
+tc qdisc add dev $NIC parent 1:2 handle 11: bfifo limit 600mb
 
-tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 224.0.0.1/32 flowid 1:10
-tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 0/0 flowid 1:11
+tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 224.0.0.1/32 flowid 1:1
+tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 0/0 flowid 1:2
 
 git clone https://github.com/Unidata/vcmtp.git
