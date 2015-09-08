@@ -121,6 +121,23 @@ def parseRetxData(line):
         return -1
 
 
+def parseRetxBOP(line):
+    """Parses the log to find retransmitted BOPs.
+
+    Args:
+        line: A line of the raw log file.
+
+    Returns:
+        -1: If no retransmitted BOP is found.
+        prodindex: Index of the product which has retransmitted BOP.
+    """
+    retx_match = re.search(r'.*\[RETX BOP\].*#(\d+)', line)
+    if retx_match:
+        return int(retx_match.group(1))
+    else:
+        return -1
+
+
 def aggregate(filename, aggregate_size):
     """Does aggregating on the given input csv.
 
@@ -180,12 +197,15 @@ def extractLog(filename):
     mcast    = {}
     # retx is a dict containing the retx blocks of each product.
     retx     = {}
+    # a set contains all the BOP-missed products.
+    retx_bop_ignore = set()
     with open(filename, 'r') as logfile:
         for i, line in enumerate(logfile):
             (prodid_success, size, rxtime) = parseSizeTime(line)
             prodid_failure = parseFailure(line)
             prodid_mcast = parseMcastData(line)
             prodid_retx = parseRetxData(line)
+            prodid_retx_bop = parseRetxBOP(line)
             if prodid_success >= 0:
                 complete_set |= {prodid_success}
                 if not complete_dict.has_key(prodid_success):
@@ -202,10 +222,13 @@ def extractLog(filename):
                     retx[prodid_retx] += 1
                 else:
                     retx[prodid_retx] = 1
+            if prodid_retx_bop >= 0:
+                retx_bop_ignore |= {prodid_retx_bop}
     logfile.close()
     retx_set = set(retx.keys())
     lossless = complete_set - retx_set
-    return (lossless, complete_set, complete_dict, failed, mcast, retx)
+    return (lossless, complete_set, complete_dict, failed, mcast, retx,
+            retx_bop_ignore)
 
 
 def calcThroughput(tx_group, lossless, complete_set, complete_dict):
@@ -276,13 +299,14 @@ def calcRatio(tx_group, lossless, complete_set, failed):
     return (lossless_ratio, complete_ratio, failed_ratio)
 
 
-def calcBlockRetxRate(tx_group, mcast, retx):
+def calcBlockRetxRate(tx_group, mcast, retx, retx_bop):
     """Calculates block retx ratio in an aggregate.
 
     Args:
         tx_group: Aggregate group.
         mcast: Dict of mcast products.
         retx: Dict of retx products.
+        retx_bop: Set of BOP-missed product id.
 
     Returns:
         (lossless_ratio, complete_ratio, failed_ratio): calculated ratios.
@@ -290,10 +314,11 @@ def calcBlockRetxRate(tx_group, mcast, retx):
     mcast_num = 0
     retx_num  = 0
     for i in tx_group:
-        if mcast.has_key(i):
-            mcast_num += mcast[i]
-        if retx.has_key(i):
-            retx_num += retx[i]
+        if i not in retx_bop:
+            if mcast.has_key(i):
+                mcast_num += mcast[i]
+            if retx.has_key(i):
+                retx_num += retx[i]
     if mcast_num + retx_num:
         retx_block_rate = float(retx_num / (mcast_num + retx_num)) * 100
     else:
@@ -316,7 +341,7 @@ def main(metadata, logfile, csvfile):
     aggregate_size = 200 * 1024 * 1024
     (tx_groups, tx_sizes) = aggregate(metadata, aggregate_size)
     (rx_noloss, rx_success_set, rx_success_dict, rx_failed, rx_mcast,
-     rx_retx) = extractLog(logfile)
+     rx_retx, rx_retx_bop) = extractLog(logfile)
     tmp_str = 'Sent first prodindex, Sent last prodindex, Sender aggregate ' \
               'size (B), Successfully received aggregate size (B), Lossless ' \
               'throughput (bps), Successful throughput (bps), Ratio of ' \
@@ -333,7 +358,8 @@ def main(metadata, logfile, csvfile):
         lossless_num = len(set(group) & rx_noloss)
         complete_num = len(set(group) & rx_success_set)
         failed_num   = len(set(group) & rx_failed)
-        retx_block_rate = calcBlockRetxRate(set(group), rx_mcast, rx_retx)
+        retx_block_rate = calcBlockRetxRate(set(group), rx_mcast, rx_retx,
+                                            rx_retx_bop)
         tmp_str = str(min(group)) + ',' + str(max(group)) + ',' \
                 + str(size) + ',' + str(rx_group_size) + ',' \
                 + str(thru_lossless) + ',' + str(thru_complete) + ',' \
