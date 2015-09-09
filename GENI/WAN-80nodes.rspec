@@ -157,13 +157,13 @@ sysctl -p</request-schema:postBootScript>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/request.owl#Reservation"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0">
-    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender"/>
-    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-WSU"/>
-    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-OSF"/>
     <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU"/>
+    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-WSU"/>
+    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender"/>
     <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-UMass"/>
+    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-OSF"/>
     <layer:atLayer rdf:resource="http://geni-orca.renci.org/owl/ethernet.owl#EthernetNetworkElement"/>
-    <layer:bandwidth rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2040000000</layer:bandwidth>
+    <layer:bandwidth rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">900000000</layer:bandwidth>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#BroadcastConnection"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-OSF">
