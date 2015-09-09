@@ -181,7 +181,7 @@ sysctl -p</request-schema:postBootScript>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#Interface"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#TermDuration">
-    <time:days rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">10</time:days>
+    <time:days rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">12</time:days>
     <rdf:type rdf:resource="http://www.w3.org/2006/time#DurationDescription"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU-ip-10-10-1-10">
