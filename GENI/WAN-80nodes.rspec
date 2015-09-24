@@ -26,19 +26,24 @@
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/osfvmsite.rdf#osfvmsite/Domain">
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#NetworkDomain"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48">
-    <topology:hasURL>https://virginia.box.com/shared/static/dlowiyuc2dbs0rp9a0t7b13czywsz600.xml</topology:hasURL>
-    <topology:hasGUID>aa29e538ae6aa28c12949cbf352d114136cb1a2f</topology:hasGUID>
-    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#DiskImage"/>
-  </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU">
     <ip4:localIPAddress rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU-ip-10-10-1-10"/>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#Interface"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req47">
+    <topology:hasURL>https://virginia.box.com/shared/static/dlowiyuc2dbs0rp9a0t7b13czywsz600.xml</topology:hasURL>
+    <topology:hasGUID>aa29e538ae6aa28c12949cbf352d114136cb1a2f</topology:hasGUID>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#DiskImage"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-OSF-ip-10-10-1-40">
     <ip4:netmask>255.255.255.0</ip4:netmask>
     <layer:label_ID>10.10.1.40</layer:label_ID>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/ip4.owl#IPAddress"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req49">
+    <topology:hasURL>https://virginia.box.com/shared/static/dlowiyuc2dbs0rp9a0t7b13czywsz600.xml</topology:hasURL>
+    <topology:hasGUID>aa29e538ae6aa28c12949cbf352d114136cb1a2f</topology:hasGUID>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#DiskImage"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#TAMU">
     <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU"/>
@@ -48,43 +53,12 @@ ntpdate pool.ntp.org
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p</request-schema:postBootScript>
     <request-schema:inDomain rdf:resource="http://geni-orca.renci.org/owl/tamuvmsite.rdf#tamuvmsite/Domain"/>
-    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48"/>
+    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req47"/>
     <compute:specificCE rdf:resource="http://geni-orca.renci.org/owl/exogeni.owl#XOLarge"/>
     <domain:hasResourceType rdf:resource="http://geni-orca.renci.org/owl/compute.owl#VM"/>
-    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">20</layer:numCE>
+    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</layer:numCE>
     <request-schema:groupName>TAMU</request-schema:groupName>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#ServerCloud"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#sender">
-    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender"/>
-    <request-schema:postBootScript rdf:datatype="http://www.w3.org/2001/XMLSchema#string">yum -y update
-yum -y install mosh
-ntpdate pool.ntp.org
-cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
-sysctl -p
-const="inet addr:"
-bindip=`hostname -I | awk -F ' ' '{print $2}'`
-iface=$(ifconfig | grep -B1 "$const$bindip" | awk '$1!="inet" &amp;&amp; $1!="--" {print $1}')
-export NIC=$iface
-route add 224.0.0.1 dev $NIC
-
-rvlan=840mbit
-rsnd=40mbit
-residue=800mbit
-
-tc qdisc add dev $NIC root handle 1: htb default 2
-tc class add dev $NIC parent 1: classid 1:1 htb rate $rsnd ceil $rsnd
-tc qdisc add dev $NIC parent 1:1 handle 10: bfifo limit 600mb
-tc class add dev $NIC parent 1: classid 1:2 htb rate $residue ceil $residue
-tc qdisc add dev $NIC parent 1:2 handle 11: bfifo limit 600mb
-
-tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 224.0.0.1/32 flowid 1:1
-tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 0/0 flowid 1:2</request-schema:postBootScript>
-    <request-schema:inDomain rdf:resource="http://geni-orca.renci.org/owl/uflvmsite.rdf#uflvmsite/Domain"/>
-    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48"/>
-    <compute:specificCE rdf:resource="http://geni-orca.renci.org/owl/exogeni.owl#XOXlarge"/>
-    <domain:hasResourceType rdf:resource="http://geni-orca.renci.org/owl/compute.owl#VM"/>
-    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#ComputeElement"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/wsuvmsite.rdf#wsuvmsite/Domain">
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#NetworkDomain"/>
@@ -101,10 +75,10 @@ ntpdate pool.ntp.org
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p</request-schema:postBootScript>
     <request-schema:inDomain rdf:resource="http://geni-orca.renci.org/owl/wsuvmsite.rdf#wsuvmsite/Domain"/>
-    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48"/>
+    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req46"/>
     <compute:specificCE rdf:resource="http://geni-orca.renci.org/owl/exogeni.owl#XOLarge"/>
     <domain:hasResourceType rdf:resource="http://geni-orca.renci.org/owl/compute.owl#VM"/>
-    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">20</layer:numCE>
+    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</layer:numCE>
     <request-schema:groupName>WSU</request-schema:groupName>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#ServerCloud"/>
   </rdf:Description>
@@ -116,10 +90,10 @@ ntpdate pool.ntp.org
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p</request-schema:postBootScript>
     <request-schema:inDomain rdf:resource="http://geni-orca.renci.org/owl/umassvmsite.rdf#umassvmsite/Domain"/>
-    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48"/>
+    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req49"/>
     <compute:specificCE rdf:resource="http://geni-orca.renci.org/owl/exogeni.owl#XOLarge"/>
     <domain:hasResourceType rdf:resource="http://geni-orca.renci.org/owl/compute.owl#VM"/>
-    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">20</layer:numCE>
+    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</layer:numCE>
     <request-schema:groupName>UMass</request-schema:groupName>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#ServerCloud"/>
   </rdf:Description>
@@ -131,16 +105,48 @@ ntpdate pool.ntp.org
 cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
 sysctl -p</request-schema:postBootScript>
     <request-schema:inDomain rdf:resource="http://geni-orca.renci.org/owl/osfvmsite.rdf#osfvmsite/Domain"/>
-    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48"/>
+    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req50"/>
     <compute:specificCE rdf:resource="http://geni-orca.renci.org/owl/exogeni.owl#XOLarge"/>
     <domain:hasResourceType rdf:resource="http://geni-orca.renci.org/owl/compute.owl#VM"/>
-    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">20</layer:numCE>
+    <layer:numCE rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</layer:numCE>
     <request-schema:groupName>OSF</request-schema:groupName>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#ServerCloud"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender">
-    <ip4:localIPAddress rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender-ip-10-10-1-1"/>
-    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#Interface"/>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#sender-UFL">
+    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender-UFL"/>
+    <request-schema:postBootScript rdf:datatype="http://www.w3.org/2001/XMLSchema#string">yum -y update
+yum -y install mosh
+ntpdate pool.ntp.org
+cp CC-NIE-Toolbox/GENI/sysctl.conf /etc
+sysctl -p
+const="inet addr:"
+bindip=`hostname -I | awk -F ' ' '{print $2}'`
+iface=$(ifconfig | grep -B1 "$const$bindip" | awk '$1!="inet" &amp;&amp; $1!="--" {print $1}')
+export NIC=$iface
+route add 224.0.0.1 dev $NIC
+
+rvlan=40mbit
+rsnd=20mbit
+residue=20mbit
+
+tc qdisc add dev $NIC root handle 1: htb default 2
+tc class add dev $NIC parent 1: classid 1:1 htb rate $rsnd ceil $rsnd
+tc qdisc add dev $NIC parent 1:1 handle 10: bfifo limit 600mb
+tc class add dev $NIC parent 1: classid 1:2 htb rate $residue ceil $residue
+tc qdisc add dev $NIC parent 1:2 handle 11: bfifo limit 600mb
+
+tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 224.0.0.1/32 flowid 1:1
+tc filter add dev $NIC protocol ip parent 1:0 prio 1 u32 match ip dst 0/0 flowid 1:2</request-schema:postBootScript>
+    <request-schema:inDomain rdf:resource="http://geni-orca.renci.org/owl/uflvmsite.rdf#uflvmsite/Domain"/>
+    <compute:diskImage rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req48"/>
+    <compute:specificCE rdf:resource="http://geni-orca.renci.org/owl/exogeni.owl#XOXlarge"/>
+    <domain:hasResourceType rdf:resource="http://geni-orca.renci.org/owl/compute.owl#VM"/>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#ComputeElement"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req50">
+    <topology:hasURL>https://virginia.box.com/shared/static/dlowiyuc2dbs0rp9a0t7b13czywsz600.xml</topology:hasURL>
+    <topology:hasGUID>aa29e538ae6aa28c12949cbf352d114136cb1a2f</topology:hasGUID>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#DiskImage"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-WSU">
     <ip4:localIPAddress rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-WSU-ip-10-10-1-100"/>
@@ -148,27 +154,37 @@ sysctl -p</request-schema:postBootScript>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#">
     <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0"/>
-    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#OSF"/>
-    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#UMass"/>
-    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#sender"/>
-    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#TAMU"/>
     <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#WSU"/>
+    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#TAMU"/>
+    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#UMass"/>
+    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#OSF"/>
+    <collections:element rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#sender-UFL"/>
     <request-schema:hasTerm rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#Term"/>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/request.owl#Reservation"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0">
-    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU"/>
-    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-WSU"/>
-    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender"/>
     <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-UMass"/>
     <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-OSF"/>
+    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU"/>
+    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-WSU"/>
+    <topology:hasInterface rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender-UFL"/>
     <layer:atLayer rdf:resource="http://geni-orca.renci.org/owl/ethernet.owl#EthernetNetworkElement"/>
-    <layer:bandwidth rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">900000000</layer:bandwidth>
+    <layer:bandwidth rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">100000000</layer:bandwidth>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#BroadcastConnection"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req46">
+    <topology:hasURL>https://virginia.box.com/shared/static/dlowiyuc2dbs0rp9a0t7b13czywsz600.xml</topology:hasURL>
+    <topology:hasGUID>aa29e538ae6aa28c12949cbf352d114136cb1a2f</topology:hasGUID>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#DiskImage"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-OSF">
     <ip4:localIPAddress rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-OSF-ip-10-10-1-40"/>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#Interface"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#centos63_gcc48-req48">
+    <topology:hasURL>https://virginia.box.com/shared/static/dlowiyuc2dbs0rp9a0t7b13czywsz600.xml</topology:hasURL>
+    <topology:hasGUID>aa29e538ae6aa28c12949cbf352d114136cb1a2f</topology:hasGUID>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/compute.owl#DiskImage"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/umassvmsite.rdf#umassvmsite/Domain">
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#NetworkDomain"/>
@@ -176,12 +192,21 @@ sysctl -p</request-schema:postBootScript>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/tamuvmsite.rdf#tamuvmsite/Domain">
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#NetworkDomain"/>
   </rdf:Description>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender-UFL-ip-10-10-1-1">
+    <ip4:netmask>255.255.255.0</ip4:netmask>
+    <layer:label_ID>10.10.1.1</layer:label_ID>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/ip4.owl#IPAddress"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender-UFL">
+    <ip4:localIPAddress rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender-UFL-ip-10-10-1-1"/>
+    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#Interface"/>
+  </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-UMass">
     <ip4:localIPAddress rdf:resource="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-UMass-ip-10-10-1-70"/>
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#Interface"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#TermDuration">
-    <time:days rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">12</time:days>
+    <time:days rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">14</time:days>
     <rdf:type rdf:resource="http://www.w3.org/2006/time#DurationDescription"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-TAMU-ip-10-10-1-10">
@@ -201,10 +226,5 @@ sysctl -p</request-schema:postBootScript>
   </rdf:Description>
   <rdf:Description rdf:about="http://geni-orca.renci.org/owl/uflvmsite.rdf#uflvmsite/Domain">
     <rdf:type rdf:resource="http://geni-orca.renci.org/owl/topology.owl#NetworkDomain"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://geni-orca.renci.org/owl/5dc8d24b-b149-4fa7-b16e-52e222415998#VLAN0-sender-ip-10-10-1-1">
-    <ip4:netmask>255.255.255.0</ip4:netmask>
-    <layer:label_ID>10.10.1.1</layer:label_ID>
-    <rdf:type rdf:resource="http://geni-orca.renci.org/owl/ip4.owl#IPAddress"/>
   </rdf:Description>
 </rdf:RDF>
