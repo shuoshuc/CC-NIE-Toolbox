@@ -1,3 +1,26 @@
+##
+# Copyright (C) 2015 University of Virginia. All rights reserved.
+#
+# @file      prodsrc-view.R
+# @author    Shawn Chen <sc7cq@virginia.edu>
+# @version   1.0
+# @date      Oct. 17, 2015
+#
+# @section   LICENSE
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or（at your option）
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details at http://www.gnu.org/copyleft/gpl.html
+#
+# @brief   Computes the VCMTP-sourced rate for each aggregate.
+
+
 rates <- numeric()
 agg <- read.csv('~/agg.csv', sep = ',', comment.char = '#')
 start <- agg[[1]]
@@ -27,4 +50,4 @@ for (i in 1:nrow(agg))
 }
 plot(rates, pch=16, type="h", xlab = 'Aggregate group',
      ylab = 'VCMTP-sourced rate (%)')
-title('Grouped VCMTP-sourced rates (7-hr NGRID)')
+title('Grouped VCMTP-sourced rates')
