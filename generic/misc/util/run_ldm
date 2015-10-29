@@ -18,7 +18,6 @@ cd
 #
 ldmadmin clean
 rm -f var/queues/*.pim var/logs/*.yaml
-ldmadmin delqueue
 ldmadmin mkqueue -f
 
 # Start the LDM-7. An explicit file is used for logging because rsyslogd(8) on
