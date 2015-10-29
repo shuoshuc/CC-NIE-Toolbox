@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""@package perGroupParser
+"""@package batch_job.py
 Copyright (C) 2015 University of Virginia. All rights reserved.
 
 file      batch_job.py
