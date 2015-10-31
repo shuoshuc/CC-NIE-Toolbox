@@ -89,22 +89,25 @@ def init_config():
     Configures the etc file and environment variables. Also sets up tc and
     routing table on the sender.
     """
+    run('service ntpd start', quiet=True)
     iface = run('hostname -I | awk \'{print $2}\'')
     if iface == '10.10.1.1':
         config_str = ('MULTICAST ANY 224.0.0.1:38800 1 10.10.1.1\n'
                       'ALLOW ANY ^.*$\nEXEC \"insert.sh\"')
-        run('route add 224.0.0.1 dev eth1')
-        run('tc qdisc add dev eth1 root handle 1: htb default 2')
+        run('route add 224.0.0.1 dev eth1', quiet=True)
+        run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
         run('tc class add dev eth1 parent 1: classid 1:1 htb rate 40mbit \
-            ceil 40mbit')
-        run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit 600mb')
+            ceil 40mbit', quiet=True)
+        run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit 600mb',
+            quiet=True)
         run('tc class add dev eth1 parent 1: classid 1:2 htb rate 40mbit \
-            ceil 40mbit')
-        run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit 600mb')
+            ceil 40mbit', quiet=True)
+        run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit 600mb',
+            quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
-            ip dst 224.0.0.1/32 flowid 1:1')
+            ip dst 224.0.0.1/32 flowid 1:1', quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
-            ip dst 0/0 flowid 1:2')
+            ip dst 0/0 flowid 1:2', quiet=True)
         with cd('/home/ldm'):
             sudo('git clone \
                  https://github.com/shawnsschen/LDM6-LDM7-comparison.git',
