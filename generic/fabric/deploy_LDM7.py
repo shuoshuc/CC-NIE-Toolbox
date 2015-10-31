@@ -153,11 +153,7 @@ def stop_LDM():
         sudo('ldmadmin stop')
 
 def deploy():
-    """
     clear_home()
     upload_pack()
     install_pack()
     init_config()
-    """
-    start_LDM()
-    #stop_LDM()
