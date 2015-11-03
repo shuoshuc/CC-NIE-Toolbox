@@ -31,13 +31,17 @@ from __future__ import division
 import csv
 import re
 import sys
+import pytz
+from dateutil.parser import parse
+from datetime import datetime
 
 
-def parseSizeTime(line):
-    """Parses the product size and receiving time in a line.
+def parseMLDM(line):
+    """Parses the product size and elapsed time received by MLDM.
 
-    Parses the product size and receiving time consumed for the product in
-    the given line of log file.
+    Parses the product size and elapsed receiving time consumed
+    for the product (which is received by MLDM) in the given line
+    of log file.
 
     Args:
         line: A line of the raw log file.
@@ -47,95 +51,51 @@ def parseSizeTime(line):
         (prodindex, prodsize, rxtime): A tuple of product index, product size
                                        and receiving time.
     """
-    success_match = re.search(r'.*\[SUCCESS\].*#(\d+)', line)
-    if success_match:
-        sizematch = re.search(r'.*size = (\d+) bytes', line)
-        timematch = re.search(r'.*time = (\d+\.\d+) seconds', line)
-    if success_match and sizematch and timematch:
-        prodindex = int(success_match.group(1))
-        size      = int(sizematch.group(1))
-        rxtime    = float(timematch.group(1))
+    match = re.search(r'.*mldm.*Received', line)
+    if match:
+        split_line = line.split()
+        # the last column is product index
+        prodindex = int(split_line[-1])
+        # col 6 is size in bytes
+        size = int(split_line[6])
+        # col 0 is the arrival time, col 7 is the insertion time.
+        arrival_time = parse(split_line[0]).astimezone(pytz.utc)
+        arrival_time = arrival_time.replace(tzinfo=None)
+        insert_time  = datetime.strptime(split_line[7], "%Y%m%d%H%M%S.%f")
+        rxtime = (arrival_time - insert_time).total_seconds()
         return (prodindex, size, rxtime)
     else:
         return (-1, -1, -1)
 
 
-def parseFailure(line):
-    """Parses the log to find unsuccessfully received products.
+def parseBackstop(line):
+    """Parses the product size and elapsed time received by the backstop.
 
-    Parses the failure message in log to find unsuccessfully received products,
-    which are caused by retransmission timeouts. Since we are not able to tell
-    whether a product is failed or simply out-of-sequence, we cannot detect
-    failure by looking at product indices. The only reliable way is the failure
-    message in log file.
+    Parses the product size and elapsed receiving time consumed for the
+    product (which is received by the backstop) in the given line of log file.
 
     Args:
         line: A line of the raw log file.
 
     Returns:
-        -1: If no failure message is found.
-        prodindex: Index of the product which is indicated lost.
+        (-1, -1, -1): If no valid size or time is found.
+        (prodindex, prodsize, rxtime): A tuple of product index, product size
+                                       and receiving time.
     """
-    failure_match = re.search(r'.*\[FAILURE\].*#(\d+)', line)
-    if failure_match:
-        return int(failure_match.group(1))
+    match = re.search(r'.*down7.*Inserted', line)
+    if match:
+        split_line = line.split()
+        # the last column is product index
+        prodindex = int(split_line[-1])
+        # col 5 is size
+        size = int(split_line[5])
+        # col 0 is the arrival time, col 6 is the insertion time.
+        arrival_time = parse(split_line[0]).astimezone(pytz.utc).replace(tzinfo=None)
+        insert_time = datetime.strptime(split_line[6], "%Y%m%d%H%M%S.%f")
+        rxtime = (arrival_time - insert_time).total_seconds()
+        return (prodindex, size, rxtime)
     else:
-        return -1
-
-
-def parseMcastData(line):
-    """Parses the log to find multicast data blocks.
-
-    Parses the log to find multicast data blocks.
-
-    Args:
-        line: A line of the raw log file.
-
-    Returns:
-        -1: If no multicast block is found.
-        prodindex: Index of the product which has multicast blocks.
-    """
-    mcast_match = re.search(r'.*\[MCAST DATA\].*#(\d+)', line)
-    if mcast_match:
-        return int(mcast_match.group(1))
-    else:
-        return -1
-
-
-def parseRetxData(line):
-    """Parses the log to find retransmitted data blocks.
-
-    Parses the log to find retransmitted data blocks.
-
-    Args:
-        line: A line of the raw log file.
-
-    Returns:
-        -1: If no retransmitted block is found.
-        prodindex: Index of the product which has retransmitted blocks.
-    """
-    retx_match = re.search(r'.*\[RETX DATA\].*#(\d+)', line)
-    if retx_match:
-        return int(retx_match.group(1))
-    else:
-        return -1
-
-
-def parseRetxBOP(line):
-    """Parses the log to find retransmitted BOPs.
-
-    Args:
-        line: A line of the raw log file.
-
-    Returns:
-        -1: If no retransmitted BOP is found.
-        prodindex: Index of the product which has retransmitted BOP.
-    """
-    retx_match = re.search(r'.*\[RETX BOP\].*#(\d+)', line)
-    if retx_match:
-        return int(retx_match.group(1))
-    else:
-        return -1
+        return (-1, -1, -1)
 
 
 def aggregate(filename, aggregate_size):
@@ -173,164 +133,84 @@ def aggregate(filename, aggregate_size):
 
 
 def extractLog(filename):
-    """Classifies the log file and extracts the lossless, complete and failed
-    products.
-
-    Classifies and extracts the lossless, complete and failed products
-    separately and saves in different lists.
+    """Extracts the key information from the log file.
 
     Args:
         filename: Filename of the log file.
 
     Returns:
-        (lossless, complete_set, complete_dict, failed, mcast, retx):
-        extracted groups.
+        (complete_set, complete_dict, vset): extracted groups.
     """
-    # lossless is the group endured no loss.
-    lossless = set()
-    # complete is the group completely received products with or without loss.
     complete_set  = set()
     complete_dict = {}
-    # failed is the group of not completely received products.
-    failed   = set()
-    # mcast is a dict containing the mcast blocks of each product.
-    mcast    = {}
-    # retx is a dict containing the retx blocks of each product.
-    retx     = {}
-    # a set contains all the BOP-missed products.
-    retx_bop_ignore = set()
+    # vset contains the products received by VCMTP
+    vset = set()
     with open(filename, 'r') as logfile:
         for i, line in enumerate(logfile):
-            (prodid_success, size, rxtime) = parseSizeTime(line)
-            prodid_failure = parseFailure(line)
-            prodid_mcast = parseMcastData(line)
-            prodid_retx = parseRetxData(line)
-            prodid_retx_bop = parseRetxBOP(line)
-            if prodid_success >= 0:
-                complete_set |= {prodid_success}
-                if not complete_dict.has_key(prodid_success):
-                    complete_dict[prodid_success] = (size, rxtime)
-            if prodid_failure >= 0:
-                failed |= {prodid_failure}
-            if prodid_mcast >= 0:
-                if mcast.has_key(prodid_mcast):
-                    mcast[prodid_mcast] += 1
-                else:
-                    mcast[prodid_mcast] = 1
-            if prodid_retx >= 0:
-                if retx.has_key(prodid_retx):
-                    retx[prodid_retx] += 1
-                else:
-                    retx[prodid_retx] = 1
-            if prodid_retx_bop >= 0:
-                retx_bop_ignore |= {prodid_retx_bop}
+            (mprodid, msize, mrxtime) = parseMLDM(line)
+            (bprodid, bsize, brxtime) = parseBackstop(line)
+            if mprodid >= 0:
+                complete_set |= {mprodid}
+                vset |= {mprodid}
+                if not complete_dict.has_key(mprodid):
+                    complete_dict[mprodid] = (msize, mrxtime)
+            elif bprodid >= 0:
+                complete_set |= {bprodid}
+                if not complete_dict.has_key(bprodid):
+                    complete_dict[bprodid] = (bsize, brxtime)
     logfile.close()
-    retx_set = set(retx.keys())
-    lossless = complete_set - retx_set
-    return (lossless, complete_set, complete_dict, failed, mcast, retx,
-            retx_bop_ignore)
+    return (complete_set, complete_dict, vset)
 
 
-def calcThroughput(tx_group, lossless, complete_set, complete_dict):
+def calcThroughput(tx_group, complete_set, complete_dict):
     """Calculates throughput for an aggregate.
-
-    Calculates throughput for a lossless group which fits into the aggregate
-    size and also cumulates the group size.
 
     Args:
         tx_group: Aggregate group.
-        lossless: Group of lossless products.
         complete_set: Set of complete products.
         complete_dict: Dict of complete products.
 
     Returns:
-        (thru_lossless, thru_complete, complete_size): calculated throughputs.
+        (thru, complete_size): calculated throughputs.
     """
-    lossless_size = 0
-    lossless_time = 0
     complete_size = 0
     complete_time = 0
-    thru_lossless = 0
-    thru_complete = 0
+    thru          = 0
     for i in tx_group & complete_set:
         complete_size += complete_dict[i][0]
         complete_time += complete_dict[i][1]
-        if i in tx_group & lossless:
-            lossless_size += complete_dict[i][0]
-            lossless_time += complete_dict[i][1]
-    if lossless_time:
-        thru_lossless = float(lossless_size / lossless_time) * 8
-    else:
-        thru_lossless = -1
     if complete_time:
-        thru_complete = float(complete_size / complete_time) * 8
+        thru = float(complete_size / complete_time) * 8
     else:
-        thru_complete = -1
-    return (thru_lossless, thru_complete, complete_size)
+        thru = -1
+    return (thru, complete_size)
 
 
-def calcRatio(tx_group, lossless, complete_set, failed):
-    """Calculates ratios for an aggregate.
-
-    Calculates ratios including lossless ratio, complete ratio and block retx
-    ratio in an aggregate.
+def calcVSR(tx_group, complete_set, vset):
+    """Calculates VCMTP-sourced rate (VSR) for an aggregate.
 
     Args:
         tx_group: Aggregate group.
-        lossless: Group of lossless products.
         complete_set: Set of complete products.
-        failed: Group of failed products.
+        vset: Group of VCMTP-sourced products.
 
     Returns:
-        (lossless_ratio, complete_ratio, failed_ratio): calculated ratios.
+        vsr: VCMTP-sourced rate.
     """
-    aggregate_num = len(tx_group)
-    lossless_num  = len(tx_group & lossless)
     complete_num  = len(tx_group & complete_set)
-    failed_num    = len(tx_group & failed)
-    if aggregate_num:
-        lossless_ratio = float(lossless_num / aggregate_num) * 100
-        complete_ratio = float(complete_num / aggregate_num) * 100
-        failed_ratio   = float(failed_num / aggregate_num) * 100
+    vsr_num       = len(tx_group & vset)
+    if complete_num:
+        vsr = float(vsr_num / complete_num) * 100
     else:
-        lossless_ratio = -1
-        complete_ratio = -1
-        failed_ratio   = -1
-    return (lossless_ratio, complete_ratio, failed_ratio)
-
-
-def calcBlockRetxRate(tx_group, mcast, retx, retx_bop):
-    """Calculates block retx ratio in an aggregate.
-
-    Args:
-        tx_group: Aggregate group.
-        mcast: Dict of mcast products.
-        retx: Dict of retx products.
-        retx_bop: Set of BOP-missed product id.
-
-    Returns:
-        (lossless_ratio, complete_ratio, failed_ratio): calculated ratios.
-    """
-    mcast_num = 0
-    retx_num  = 0
-    for i in tx_group:
-        if i not in retx_bop:
-            if mcast.has_key(i):
-                mcast_num += mcast[i]
-            if retx.has_key(i):
-                retx_num += retx[i]
-    if mcast_num + retx_num:
-        retx_block_rate = float(retx_num / (mcast_num + retx_num)) * 100
-    else:
-        retx_block_rate = -1
-    return retx_block_rate
+        vsr = -1
+    return vsr
 
 
 def main(metadata, logfile, csvfile):
     """Reads the raw log file and parses it.
 
-    Reads the raw VCMTPv3 log file, parses each line and computes throughput,
-    block-based retransmission rate and FDSR over an aggregate size.
+    Reads the raw ldmd log file, parses each line and computes throughput
+    and VSR over an aggregate size.
 
     Args:
         metadata: Filename of the metadata.
@@ -340,33 +220,18 @@ def main(metadata, logfile, csvfile):
     w = open(csvfile, 'w+')
     aggregate_size = 200 * 1024 * 1024
     (tx_groups, tx_sizes) = aggregate(metadata, aggregate_size)
-    (rx_noloss, rx_success_set, rx_success_dict, rx_failed, rx_mcast,
-     rx_retx, rx_retx_bop) = extractLog(logfile)
+    (rx_success_set, rx_success_dict, vset) = extractLog(logfile)
     tmp_str = 'Sent first prodindex, Sent last prodindex, Sender aggregate ' \
-              'size (B), Successfully received aggregate size (B), Lossless ' \
-              'throughput (bps), Successful throughput (bps), Ratio of ' \
-              'lossless products (%), Number of lossless products, Ratio of ' \
-              'successful products (%), Number of successful products, Ratio ' \
-              'of failed products (%), Number of failed products, Block ' \
-              'retransmission rate (%)' + '\n'
+              'size (B), Successfully received aggregate size (B), ' \
+              'Throughput (bps), VSR (%)' + '\n'
     w.write(tmp_str)
     for group, size in zip(tx_groups, tx_sizes):
-        (thru_lossless, thru_complete, rx_group_size) = calcThroughput(
-            set(group), rx_noloss, rx_success_set, rx_success_dict)
-        (lossless_ratio, complete_ratio, failed_ratio) = calcRatio(set(group),
-            rx_noloss, rx_success_set, rx_failed)
-        lossless_num = len(set(group) & rx_noloss)
-        complete_num = len(set(group) & rx_success_set)
-        failed_num   = len(set(group) & rx_failed)
-        retx_block_rate = calcBlockRetxRate(set(group), rx_mcast, rx_retx,
-                                            rx_retx_bop)
+        (thru, rx_group_size) = calcThroughput(set(group), rx_success_set,
+                                               rx_success_dict)
+        vsr = calcVSR(set(group), rx_success_set, vset)
         tmp_str = str(min(group)) + ',' + str(max(group)) + ',' \
                 + str(size) + ',' + str(rx_group_size) + ',' \
-                + str(thru_lossless) + ',' + str(thru_complete) + ',' \
-                + str(lossless_ratio) + ',' + str(lossless_num) + ',' \
-                + str(complete_ratio) + ',' + str(complete_num) + ',' \
-                + str(failed_ratio) + ',' + str(failed_num) + ',' \
-                + str(retx_block_rate) + '\n'
+                + str(thru) + ',' + str(vsr) + '\n'
         w.write(tmp_str)
     w.close()
 
