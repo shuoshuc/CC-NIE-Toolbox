@@ -33,6 +33,10 @@ logging.basicConfig()
 paramiko_logger = logging.getLogger("paramiko.transport")
 paramiko_logger.disabled = True
 
+LDM_VER = 'ldm-6.12.15.37'
+LDM_PACK_NAME = LDM_VER + '.tar.gz'
+LDM_PACK_PATH = '~/'
+
 def read_hosts():
     """
     Reads hosts IP from sys.stdin line by line, expecting one per line.
@@ -57,8 +61,6 @@ def upload_pack():
     Uploads the LDM source code package onto the test node. Also uploads a
     LDM start script.
     """
-    LDM_PACK_PATH = '~/'
-    LDM_PACK_NAME = 'ldm-6.12.15.35.tar.gz'
     put(LDM_PACK_PATH + LDM_PACK_NAME, '/home/ldm', mode=0664)
     put('~/Workspace/CC-NIE-Toolbox/generic/misc/util/', '/home/ldm',
         mode=0664)
@@ -71,8 +73,6 @@ def install_pack():
     """
     Compiles and installs the LDM source code.
     """
-    LDM_VER = 'ldm-6.12.15.35'
-    LDM_PACK_NAME = LDM_VER + '.tar.gz'
     with settings(sudo_user='ldm'):
         with cd('/home/ldm'):
             sudo('gunzip -c %s | pax -r \'-s:/:/src/:\'' % LDM_PACK_NAME)
