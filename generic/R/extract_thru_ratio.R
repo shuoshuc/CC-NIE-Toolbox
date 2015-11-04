@@ -249,3 +249,12 @@ geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), colour="darkgrey", width=1.0, pos
 geom_line(position=pd) + geom_point(position=pd, size=3, shape=21, fill="white") +
 xlab("Group number") + ylab("Successful FDR (%)") +
 ggtitle("Successful FDR across 400 minutes") + theme_bw()
+
+plot(retx_d, type="o",col="red", xlab='Aggregate number', ylab='Retx ratio (%)')
+lines(retx_e, type='o', col='blue')
+lines(retx_f, type='o', col='green')
+title('f_rcv study (Expt D/E/F)')
+
+ggplot(df, aes(x=id, y=val, colour=group, group=group)) + 
+geom_line() + geom_point() + xlab("Group number") + ylab("Block Retx Ratio (%)") +
+ggtitle("Block Retx Ratio Study (Expt F)") + theme_bw()

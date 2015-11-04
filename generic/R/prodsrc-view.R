@@ -25,7 +25,7 @@ rates <- numeric()
 agg <- read.csv('~/agg.csv', sep = ',', comment.char = '#')
 start <- agg[[1]]
 end <- agg[[2]]
-data <- read.csv('~/prodsrc-7hr.log', sep = ':', comment.char = '#')
+data <- read.csv('~/prodsrc-recv2-24hr.log', sep = ':', comment.char = '#')
 y <- ifelse(data[[1]] == 'VCMTP', 1, 0)
 x <- data[[2]]
 for (i in 1:nrow(agg))
@@ -50,4 +50,4 @@ for (i in 1:nrow(agg))
 }
 plot(rates, pch=16, type="h", xlab = 'Aggregate group',
      ylab = 'VCMTP-sourced rate (%)')
-title('Grouped VCMTP-sourced rates')
+title('Grouped VCMTP-sourced rates - recv2 (24-hr NGRID)')
