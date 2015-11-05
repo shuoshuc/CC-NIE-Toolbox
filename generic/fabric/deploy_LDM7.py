@@ -122,13 +122,13 @@ def init_config():
         config_str = 'RECEIVE ANY 10.10.1.1 ' + iface
     fd = StringIO()
     get('/home/ldm/.bashrc', fd)
-    content=fd.getvalue()
+    content = fd.getvalue()
     if 'ulimit -c "unlimited"' in content:
         update_bashrc = True
     else:
         update_bashrc = False
     get('/home/ldm/.bash_profile', fd)
-    content=fd.getvalue()
+    content = fd.getvalue()
     if 'export PATH=$PATH:$HOME/util' in content:
         update_profile = True
     else:
@@ -157,6 +157,22 @@ def stop_LDM():
     """
     with settings(sudo_user='ldm'), cd('/home/ldm'):
         sudo('ldmadmin stop')
+
+def fetch_log():
+    """
+    Fetches the LDM log.
+    """
+    iface = run('hostname -I | awk \'{print $2}\'')
+    """
+    with cd('/home/ldm/var/logs'):
+        run('mv ldmd_test.log %s.log' % iface)
+    get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM7_LOG/')
+    """
+    if iface == '10.10.1.1':
+        with settings(sudo_user='ldm'), cd('/home/ldm'):
+            sudo('sar -n DEV | grep eth1 > bandwidth.log')
+            get('cpu_measure.log', '~/Workspace/LDM7_LOG/')
+            get('bandwidth.log', '~/Workspace/LDM7_LOG/')
 
 def deploy():
     clear_home()
