@@ -33,7 +33,7 @@ logging.basicConfig()
 paramiko_logger = logging.getLogger("paramiko.transport")
 paramiko_logger.disabled = True
 
-LDM_VER = 'ldm-6.12.15.37'
+LDM_VER = 'ldm-6.12.15.38'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/'
 
@@ -101,13 +101,14 @@ def init_config():
                       'ALLOW ANY ^.*$\nEXEC \"insert.sh\"'
                       '\nEXEC \"cpu_mon.sh\"')
         run('route add 224.0.0.1 dev eth1', quiet=True)
+        run('tc qdisc del dev eth1 root', quiet=True)
         run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
-        run('tc class add dev eth1 parent 1: classid 1:1 htb rate 40mbit \
-            ceil 40mbit', quiet=True)
+        run('tc class add dev eth1 parent 1: classid 1:1 htb rate 20mbit \
+            ceil 20mbit', quiet=True)
         run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit 600mb',
             quiet=True)
-        run('tc class add dev eth1 parent 1: classid 1:2 htb rate 40mbit \
-            ceil 40mbit', quiet=True)
+        run('tc class add dev eth1 parent 1: classid 1:2 htb rate 20mbit \
+            ceil 20mbit', quiet=True)
         run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit 600mb',
             quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
