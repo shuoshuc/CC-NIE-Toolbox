@@ -34,6 +34,8 @@ import pytz
 from dateutil.parser import parse
 from datetime import datetime
 
+# RTT is 55 ms
+rtt = 0.001
 
 def parseMLDM(line):
     """Parses the product size and elapsed time received by MLDM.
@@ -138,7 +140,7 @@ def calcCBR(index, complete_dict):
     true_time  = 0
     # vc_rate is the circuit rate in bps
     vc_rate    = 40000000
-    ideal_time += float(complete_dict[index][0] / vc_rate)
+    ideal_time += float(complete_dict[index][0] / vc_rate) + 0.5 * rtt
     true_time  += complete_dict[index][1]
     if ideal_time and true_time:
         cbr = float(ideal_time / true_time) * 100
