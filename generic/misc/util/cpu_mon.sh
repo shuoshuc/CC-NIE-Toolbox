@@ -3,7 +3,7 @@
 LOG=$(printenv LDMHOME)/cpu_measure.log
 while true
 do
-    pidstat -C ldm >> $LOG
+    ps -eo pcpu,pid,args | grep -E 'ldmd|mldm'
     echo -en "\n\n" >> $LOG
     sleep 60
 done
