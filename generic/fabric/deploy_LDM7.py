@@ -66,7 +66,7 @@ def upload_pack():
         mode=0664)
     with cd('/home/ldm'):
         run('chown ldm.ldm %s' % LDM_PACK_NAME)
-        run('chmod +x util/run_ldm util/insert.sh')
+        run('chmod +x util/run_ldm util/insert.sh util/cpu_mon.sh')
         run('chown -R ldm.ldm util')
 
 def install_pack():
@@ -90,10 +90,16 @@ def init_config():
     routing table on the sender.
     """
     run('service ntpd start', quiet=True)
+    run('yum -y install sysstat', quiet=True)
+    run('sed -i -e \'s/*\/10/*\/1/g\' /etc/cron.d/sysstat', quiet=True)
+    run('rm /var/log/sa/*', quiet=True)
+    run('service crond start', quiet=True)
+    run('service sysstat start', quiet=True)
     iface = run('hostname -I | awk \'{print $2}\'')
     if iface == '10.10.1.1':
         config_str = ('MULTICAST ANY 224.0.0.1:38800 1 10.10.1.1\n'
-                      'ALLOW ANY ^.*$\nEXEC \"insert.sh\"')
+                      'ALLOW ANY ^.*$\nEXEC \"insert.sh\"'
+                      '\nEXEC \"cpu_mon.sh\"')
         run('route add 224.0.0.1 dev eth1', quiet=True)
         run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
         run('tc class add dev eth1 parent 1: classid 1:1 htb rate 40mbit \
