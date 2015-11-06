@@ -164,11 +164,9 @@ def fetch_log():
     Fetches the LDM log.
     """
     iface = run('hostname -I | awk \'{print $2}\'')
-    """
     with cd('/home/ldm/var/logs'):
         run('mv ldmd_test.log %s.log' % iface)
     get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM7_LOG/')
-    """
     if iface == '10.10.1.1':
         with settings(sudo_user='ldm'), cd('/home/ldm'):
             sudo('sar -n DEV | grep eth1 > bandwidth.log')
