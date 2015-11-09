@@ -39,9 +39,9 @@ LDM_VER = 'ldm-6.12.15.38'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
 TC_RATE = 20 # Mbps
-RTT = 31 # ms
+RTT = 89 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
-RCV_NUM = 1 # number of receivers
+RCV_NUM = 8 # number of receivers
 
 def read_hosts():
     """
@@ -122,7 +122,7 @@ def init_config():
                       '\nEXEC \"cpu_mon.sh\"')
         run('tc qdisc del dev eth1 root', quiet=True)
         run('tc qdisc add dev eth1 root tbf rate %smbit burst 50kb limit \
-            %sb' % (str(TC_RATE), str(2*SINGLE_BDP*RCV_NUM)), quiet=True)
+            %sb' % (str(TC_RATE*RCV_NUM), str(2*SINGLE_BDP*RCV_NUM)), quiet=True)
         with cd('/home/ldm'):
             sudo('git clone \
                  https://github.com/shawnsschen/LDM6-LDM7-comparison.git',
