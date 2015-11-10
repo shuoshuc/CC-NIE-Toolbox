@@ -51,15 +51,15 @@ def parseMLDM(line):
                                        and receiving time.
     """
     split_line = line.split()
-    if split_line[4].isdigit():
+    if split_line[3].isdigit():
         # the last column is product index
         prodindex = int(split_line[-1])
         # col 6 is size in bytes
-        size = int(split_line[4])
+        size = int(split_line[3])
         # col 0 is the arrival time, col 7 is the insertion time.
         arrival_time = parse(split_line[0]).astimezone(pytz.utc)
         arrival_time = arrival_time.replace(tzinfo=None)
-        insert_time  = datetime.strptime(split_line[5], "%Y%m%d%H%M%S.%f")
+        insert_time  = datetime.strptime(split_line[4], "%Y%m%d%H%M%S.%f")
         rxtime = (arrival_time - insert_time).total_seconds()
         return (prodindex, size, rxtime)
     else:
