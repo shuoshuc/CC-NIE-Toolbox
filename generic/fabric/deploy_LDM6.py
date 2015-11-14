@@ -41,7 +41,7 @@ LDM_PACK_PATH = '~/Workspace/'
 TC_RATE = 20 # Mbps
 RTT = 89 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
-RCV_NUM = 8 # number of receivers
+RCV_NUM = 24 # number of receivers
 
 def read_hosts():
     """
@@ -128,8 +128,10 @@ def init_config():
                  https://github.com/shawnsschen/LDM6-LDM7-comparison.git',
                  user='ldm', quiet=True)
         install_config_ctcp()
+        sudo('regutil -s 5G /queue/size', user='ldm')
     else:
         config_str = 'REQUEST ANY .* 10.10.1.1'
+        sudo('regutil -s 3G /queue/size', user='ldm')
     fd = StringIO()
     get('/home/ldm/.bashrc', fd)
     content = fd.getvalue()
@@ -151,7 +153,7 @@ def init_config():
             if not update_profile:
                 sudo('echo \'export PATH=$PATH:$HOME/util\' >> .bash_profile')
         sudo('regutil -s %s /hostname' % iface)
-        sudo('regutil -s 5G /queue/size')
+        #sudo('regutil -s 5G /queue/size')
         sudo('regutil -s 35000 /queue/slots')
 
 def start_LDM():
