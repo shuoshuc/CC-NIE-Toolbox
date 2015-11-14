@@ -35,7 +35,8 @@ paramiko_logger.disabled = True
 
 LDM_VER = 'ldm-6.12.15.38'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
-LDM_PACK_PATH = '~/'
+LDM_PACK_PATH = '~/Workspace/'
+TC_RATE = 240 # Mbps
 
 def read_hosts():
     """
@@ -76,6 +77,7 @@ def install_pack():
     with settings(sudo_user='ldm'):
         with cd('/home/ldm'):
             sudo('gunzip -c %s | pax -r \'-s:/:/src/:\'' % LDM_PACK_NAME)
+        patch_linkspeed()
         with cd('/home/ldm/%s/src' % LDM_VER):
             sudo('make distclean', quiet=True)
             sudo('./configure --with-debug --with-multicast \
@@ -103,12 +105,12 @@ def init_config():
         run('route add 224.0.0.1 dev eth1', quiet=True)
         run('tc qdisc del dev eth1 root', quiet=True)
         run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
-        run('tc class add dev eth1 parent 1: classid 1:1 htb rate 20mbit \
-            ceil 20mbit', quiet=True)
+        run('tc class add dev eth1 parent 1: classid 1:1 htb rate %smbit \
+            ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
         run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit 600mb',
             quiet=True)
-        run('tc class add dev eth1 parent 1: classid 1:2 htb rate 20mbit \
-            ceil 20mbit', quiet=True)
+        run('tc class add dev eth1 parent 1: classid 1:2 htb rate %smbit \
+            ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
         run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit 600mb',
             quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
@@ -119,8 +121,11 @@ def init_config():
             sudo('git clone \
                  https://github.com/shawnsschen/LDM6-LDM7-comparison.git',
                  user='ldm', quiet=True)
+        sudo('regutil -s 5G /queue/size', user='ldm')
     else:
         config_str = 'RECEIVE ANY 10.10.1.1 ' + iface
+        sudo('regutil -s 3G /queue/size', user='ldm')
+        patch_sysctl()
     fd = StringIO()
     get('/home/ldm/.bashrc', fd)
     content = fd.getvalue()
@@ -142,7 +147,7 @@ def init_config():
             if not update_profile:
                 sudo('echo \'export PATH=$PATH:$HOME/util\' >> .bash_profile')
         sudo('regutil -s %s /hostname' % iface)
-        sudo('regutil -s 5G /queue/size')
+        #sudo('regutil -s 5G /queue/size')
         sudo('regutil -s 35000 /queue/slots')
 
 def start_LDM():
@@ -166,12 +171,30 @@ def fetch_log():
     iface = run('hostname -I | awk \'{print $2}\'')
     with cd('/home/ldm/var/logs'):
         run('mv ldmd_test.log %s.log' % iface)
-    get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM7_LOG/')
+    get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM6-LDM7-LOG/')
     if iface == '10.10.1.1':
         with settings(sudo_user='ldm'), cd('/home/ldm'):
             sudo('sar -n DEV | grep eth1 > bandwidth.log')
-            get('cpu_measure.log', '~/Workspace/LDM7_LOG/')
-            get('bandwidth.log', '~/Workspace/LDM7_LOG/')
+            get('cpu_measure.log', '~/Workspace/LDM6-LDM7-LOG/')
+            get('bandwidth.log', '~/Workspace/LDM6-LDM7-LOG/')
+
+def patch_linkspeed():
+    """
+    Patches the receiving side linkspeed.
+    """
+    with settings(sudo_user='ldm'), cd(
+        '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/receiver' % LDM_VER):
+        sudo('sed -i -e \'s/linkspeed(20000000)/linkspeed(%s)/g\' \
+             vcmtpRecvv3.cpp' % str(TC_RATE*1000*1000), quiet=True)
+
+def patch_sysctl():
+    """
+    Patches the core mem size in sysctl config.
+    """
+    run('sysctl -w net.core.rmem_max=%s' % str(int(1.2*1000*1000*1000)))
+    #run('sysctl -w net.core.wmem_max=%s' % str(1*1024*1024*1024))
+    run('sysctl -w net.core.rmem_default=%s' % str(int(1.2*1000*1000*1000)))
+    #run('sysctl -w net.core.wmem_default=%s' % str(1*1024*1024*1024))
 
 def deploy():
     clear_home()
