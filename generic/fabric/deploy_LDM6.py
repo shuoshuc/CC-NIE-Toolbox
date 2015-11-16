@@ -41,7 +41,8 @@ LDM_PACK_PATH = '~/Workspace/'
 TC_RATE = 20 # Mbps
 RTT = 89 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
-RCV_NUM = 24 # number of receivers
+RCV_NUM = 8 # number of receivers
+LOSS_RATE = 0.01
 
 def read_hosts():
     """
@@ -111,6 +112,7 @@ def init_config():
     routing table on the sender.
     """
     run('service ntpd start', quiet=True)
+    run('service iptables start', quiet=True)
     run('yum -y install sysstat', quiet=True)
     run('sed -i -e \'s/*\/10/*\/1/g\' /etc/cron.d/sysstat', quiet=True)
     run('rm /var/log/sa/*', quiet=True)
@@ -192,6 +194,20 @@ def patch_sysctl():
     run('sysctl -w net.core.wmem_max=%s' % str(1*1024*1024*1024))
     run('sysctl -w net.core.rmem_default=%s' % str(1*1024*1024*1024))
     run('sysctl -w net.core.wmem_default=%s' % str(1*1024*1024*1024))
+
+def add_loss():
+    """
+    Adds loss in iptables.
+    """
+    run('iptables -A INPUT -i eth1 -m statistic --mode random \
+        --probability %s -j DROP' % str(LOSS_RATE))
+
+def rm_loss():
+    """
+    Removes loss in iptables.
+    """
+    run('iptables -D INPUT -i eth1 -m statistic --mode random \
+        --probability %s -j DROP' % str(LOSS_RATE))
 
 def deploy():
     clear_home()
