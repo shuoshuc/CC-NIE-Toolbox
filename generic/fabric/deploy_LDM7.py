@@ -36,7 +36,8 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.38'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 240 # Mbps
+TC_RATE = 20 # Mbps
+LOSS_RATE = 0.005
 
 def read_hosts():
     """
@@ -92,6 +93,7 @@ def init_config():
     routing table on the sender.
     """
     run('service ntpd start', quiet=True)
+    run('service iptables start', quiet=True)
     run('yum -y install sysstat', quiet=True)
     run('sed -i -e \'s/*\/10/*\/1/g\' /etc/cron.d/sysstat', quiet=True)
     run('rm /var/log/sa/*', quiet=True)
@@ -195,6 +197,20 @@ def patch_sysctl():
     #run('sysctl -w net.core.wmem_max=%s' % str(1*1024*1024*1024))
     run('sysctl -w net.core.rmem_default=%s' % str(int(1.2*1000*1000*1000)))
     #run('sysctl -w net.core.wmem_default=%s' % str(1*1024*1024*1024))
+
+def add_loss():
+    """
+    Adds loss in iptables.
+    """
+    run('iptables -A INPUT -i eth1 -m statistic --mode random \
+        --probability %s -p udp -j DROP' % str(LOSS_RATE))
+
+def rm_loss():
+    """
+    Removes loss in iptables.
+    """
+    run('iptables -D INPUT -i eth1 -m statistic --mode random \
+        --probability %s -p udp -j DROP' % str(LOSS_RATE))
 
 def deploy():
     clear_home()
