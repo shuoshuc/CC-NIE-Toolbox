@@ -35,7 +35,7 @@ logging.basicConfig()
 paramiko_logger = logging.getLogger("paramiko.transport")
 paramiko_logger.disabled = True
 
-LDM_VER = 'ldm-6.12.15.38'
+LDM_VER = 'ldm-6.12.15.39'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
 TC_RATE = 20 # Mbps
