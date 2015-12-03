@@ -41,12 +41,20 @@ thru_1MB <- thru_1MB / 1000000
 
 
 # For plot
-boxlist <- list('1'=thru_1MB, '10'=thru_10MB, '20'=thru_20MB, '30'=thru_30MB,
-                '50'=thru_50MB, '100'=thru_100MB, '200'=thru_200MB)
-plotcol <- c('blue', 'yellow', 'red', 'forestgreen', 'purple', 'dodgerblue',
-             'darkorange')
+par(mar=c(5.1,5.1,4.1,2.1))
+boxlist <- list('1'=thru_1MB, '10'=thru_10MB, '20'=thru_20MB, '50'=thru_50MB,
+                '100'=thru_100MB, '200'=thru_200MB, '500'=thru_500MB, '1000'=thru_1000MB)
+plotcol <- c('indianred1', 'green4', 'lightskyblue', 'khaki', 'coral', 'purple',
+             'dodgerblue', 'darkorange')
 options(scipen=10)
-boxplot(boxlist, col=plotcol, las=1)
-title('Throughput vs. Aggregate Size Plot', xlab='Aggregate Size (MB)',
-      ylab='Lossless Throughput per Aggregate (Mbps)')
-mtext('10 runs from Expt1-PSC')
+boxplot(boxlist, col=plotcol, las=1, outline=FALSE, xaxt='n', yaxt='n')
+axis(side=1, at=1, labels='1', cex.axis=1.5)
+axis(side=1, at=2, labels='10', cex.axis=1.5)
+axis(side=1, at=3, labels='20', cex.axis=1.5)
+axis(side=1, at=4, labels='50', cex.axis=1.5)
+axis(side=1, at=5, labels='100', cex.axis=1.5)
+axis(side=1, at=6, labels='200', cex.axis=1.5)
+axis(side=1, at=7, labels='500', cex.axis=1.5)
+axis(side=1, at=8, labels='1000', cex.axis=1.5)
+axis(side=2, at=seq(92,104,2), cex.axis=1.5)
+title(xlab='Aggregate Group Size (MB)', ylab='Throughput per Aggregate (Mbps)', cex.lab=1.5)
