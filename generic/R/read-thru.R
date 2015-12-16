@@ -1,4 +1,4 @@
-csvpath <- '~/Workspace/LDM6-LDM7-LOG/thru-vs-rate/Lossless-16nodes/LDM7/16nodes-60Mbps/csv/'
+csvpath <- '~/Workspace/LDM6-LDM7-LOG/thru-vs-rate/Lossy-16nodes/LDM7/16nodes-60Mbps-fsnd1000000/csv/'
 csvfiles <- list.files(path = csvpath, pattern = '.csv')
 thru_arr <- array()
 for (i in 1:length(csvfiles))
@@ -12,4 +12,4 @@ for (i in 1:nrow(thru_arr))
 {
   avg_thru[i] <- mean(thru_arr[i,])
 }
-thru <- mean(avg_thru)/1000
+thru <- mean(avg_thru)/1000000
