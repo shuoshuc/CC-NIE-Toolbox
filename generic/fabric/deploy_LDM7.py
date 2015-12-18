@@ -36,7 +36,7 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.39'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 30 # Mbps
+TC_RATE = 20 # Mbps
 LOSS_RATE = 0.01
 
 def read_hosts():
@@ -196,7 +196,7 @@ def patch_fsnd():
     """
     with settings(sudo_user='ldm'), cd(
         '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/sender' % LDM_VER):
-        sudo('sed -i -e \'s/500.0/5000.0/g\' vcmtpSendv3.h', quiet=True)
+        sudo('sed -i -e \'s/500.0/1000000.0/g\' vcmtpSendv3.h', quiet=True)
 
 def patch_sysctl():
     """
