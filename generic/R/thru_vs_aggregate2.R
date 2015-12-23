@@ -40,14 +40,14 @@ for(i in 1:10)
 thru_1MB <- thru_1MB / 1000000
 
 
-thru_1MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/1MB.csv')[[5]]/1000000
-thru_10MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/10MB.csv')[[5]]/1000000
-thru_20MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/20MB.csv')[[5]]/1000000
-thru_50MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/50MB.csv')[[5]]/1000000
-thru_100MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/100MB.csv')[[5]]/1000000
-thru_200MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/200MB.csv')[[5]]/1000000
-thru_500MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/500MB.csv')[[5]]/1000000
-thru_1000MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/1000MB.csv')[[5]]/1000000
+thru_1MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/1MB.csv')[[5]]/1000000
+thru_10MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/10MB.csv')[[5]]/1000000
+thru_20MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/20MB.csv')[[5]]/1000000
+thru_50MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/50MB.csv')[[5]]/1000000
+thru_100MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/100MB.csv')[[5]]/1000000
+thru_200MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/200MB.csv')[[5]]/1000000
+thru_500MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/500MB.csv')[[5]]/1000000
+thru_1000MB <- read.csv('~/Workspace/LDM6-LDM7-LOG/Gselect/7hr-fsnd5000-800Mbps-UMass-SL/1000MB.csv')[[5]]/1000000
 # For plot
 par(mar=c(5.1,5.1,4.1,2.1))
 boxlist <- list('1'=thru_1MB, '10'=thru_10MB, '20'=thru_20MB, '50'=thru_50MB,
@@ -64,7 +64,7 @@ axis(side=1, at=5, labels='100', cex.axis=1.5)
 axis(side=1, at=6, labels='200', cex.axis=1.5)
 axis(side=1, at=7, labels='500', cex.axis=1.5)
 axis(side=1, at=8, labels='1000', cex.axis=1.5)
-axis(side=2, at=seq(92,104,4), cex.axis=1.5)
+axis(side=2, at=seq(0,800,50), cex.axis=1.5)
 title(xlab='Aggregate File-set (group) Size (MB)', ylab='Throughput (Mbps)', cex.lab=1.5)
 
 boxlist <- list('Group1'=g1, 'Group2'=g2, 'Group3'=g3, 'Group4'=g4, 'Group5'=g5)
