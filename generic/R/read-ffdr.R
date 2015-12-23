@@ -1,4 +1,4 @@
-csvpath <- '~/Workspace/LDM6-LDM7-LOG/FFDR-vs-loss/16nodes-20Mbps-fsnd1000000/16nodes-20Mbps-0.02loss/csv/'
+csvpath <- '~/Workspace/LDM6-LDM7-LOG/new-thru-vs-rate/LDM7-0.01lossy/16nodes/fsnd5000-30Mbps/csv/'
 csvfiles <- list.files(path = csvpath, pattern = '.csv')
 ffdr_arr <- array()
 for (i in 1:length(csvfiles))
