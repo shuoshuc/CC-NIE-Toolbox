@@ -5,4 +5,4 @@ plot(1:59, bw6, col='red', type='l', lwd=3, lty=5, xlab='Minutes',
      cex.axis=1.5, cex.main=1.5)
 lines(1:59, bw7, col='blue', type='l', lwd=3)
 plot(1:60, data, type='h', lwd=3, xlab='Minutes', ylab='Agg. Size (MB)',
-     main='Filestream Traffic Pattern', cex.lab=1.5, cex.axis=1.5, cex.main=1.5)
+     main='File-Stream Traffic Pattern', cex.lab=1.5, cex.axis=1.5, cex.main=1.5)
