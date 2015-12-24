@@ -36,7 +36,7 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.39'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 20 # Mbps
+TC_RATE = 800 # Mbps
 LOSS_RATE = 0.01
 
 def read_hosts():
@@ -127,7 +127,7 @@ def init_config():
         sudo('regutil -s 5G /queue/size', user='ldm')
     else:
         config_str = 'RECEIVE ANY 10.10.1.1 ' + iface
-        sudo('regutil -s 3G /queue/size', user='ldm')
+        sudo('regutil -s 2G /queue/size', user='ldm')
         patch_sysctl()
     fd = StringIO()
     get('/home/ldm/.bashrc', fd)
@@ -196,15 +196,15 @@ def patch_fsnd():
     """
     with settings(sudo_user='ldm'), cd(
         '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/sender' % LDM_VER):
-        sudo('sed -i -e \'s/500.0/1000000.0/g\' vcmtpSendv3.h', quiet=True)
+        sudo('sed -i -e \'s/500.0/5000.0/g\' vcmtpSendv3.h', quiet=True)
 
 def patch_sysctl():
     """
     Patches the core mem size in sysctl config.
     """
-    run('sysctl -w net.core.rmem_max=%s' % str(int(1.2*1000*1000*1000)))
+    run('sysctl -w net.core.rmem_max=%s' % str(int(2*1000*1000*1000)))
     #run('sysctl -w net.core.wmem_max=%s' % str(1*1024*1024*1024))
-    run('sysctl -w net.core.rmem_default=%s' % str(int(1.2*1000*1000*1000)))
+    run('sysctl -w net.core.rmem_default=%s' % str(int(2*1000*1000*1000)))
     #run('sysctl -w net.core.wmem_default=%s' % str(1*1024*1024*1024))
 
 def add_loss():
