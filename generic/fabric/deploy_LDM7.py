@@ -20,7 +20,7 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 more details at http://www.gnu.org/copyleft/gpl.html
 
-brief     Installs and deploys LDM7 on the testbed.
+brief     Installs and deploys LDM7 on the GENI testbed.
 """
 
 import logging
@@ -37,7 +37,7 @@ LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
 TC_RATE = 20 # Mbps
-LOSS_RATE = 0.02
+LOSS_RATE = 0.005
 
 def read_hosts():
     """
