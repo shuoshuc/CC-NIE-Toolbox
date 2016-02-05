@@ -37,7 +37,7 @@ LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
 TC_RATE = 20 # Mbps
-LOSS_RATE = 0.005
+LOSS_RATE = 0.01
 
 def read_hosts():
     """
