@@ -184,6 +184,7 @@ def fetch_log():
             sudo('sar -n DEV | grep eth1 > bandwidth.log')
             get('cpu_measure.log', '~/Workspace/LDM6-LDM7-LOG/')
             get('bandwidth.log', '~/Workspace/LDM6-LDM7-LOG/')
+            get('tc_mon.log', '~/Workspace/LDM6-LDM7-LOG/')
 
 def patch_linkspeed():
     """
