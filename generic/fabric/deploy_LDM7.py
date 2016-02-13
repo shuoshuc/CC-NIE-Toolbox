@@ -105,7 +105,7 @@ def init_config():
     if iface == '10.10.1.1':
         config_str = ('MULTICAST ANY 224.0.0.1:38800 1 10.10.1.1\n'
                       'ALLOW ANY ^.*$\nEXEC \"insert.sh\"'
-                      '\nEXEC \"cpu_mon.sh\"')
+                      '\nEXEC \"cpu_mon.sh\"\nEXEC \"tc_mon.sh\"')
         run('route add 224.0.0.1 dev eth1', quiet=True)
         run('tc qdisc del dev eth1 root', quiet=True)
         run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
