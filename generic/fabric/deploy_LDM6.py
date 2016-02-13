@@ -74,7 +74,7 @@ def upload_pack():
         mode=0664)
     with cd('/home/ldm'):
         run('chown ldm.ldm %s' % LDM_PACK_NAME)
-        run('chmod +x util/run_ldm util/insert.sh util/cpu_mon.sh')
+        run('chmod +x util/run_ldm util/insert.sh util/cpu_mon.sh util/tc_mon.sh')
         run('chown -R ldm.ldm util')
 
 def install_pack():
@@ -121,7 +121,7 @@ def init_config():
     iface = run('hostname -I | awk \'{print $2}\'')
     if iface == '10.10.1.1':
         config_str = ('ALLOW ANY ^.*$\nEXEC \"insert.sh\"'
-                      '\nEXEC \"cpu_mon.sh\"')
+                      '\nEXEC \"cpu_mon.sh\"\nEXEC \"tc_mon.sh\"')
         run('tc qdisc del dev eth1 root', quiet=True)
         run('tc qdisc add dev eth1 root tbf rate %smbit burst 50kb limit \
             %sb' % (str(TC_RATE*RCV_NUM), str(2*SINGLE_BDP*RCV_NUM)), quiet=True)
