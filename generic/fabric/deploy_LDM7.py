@@ -71,7 +71,7 @@ def upload_pack():
         mode=0664)
     with cd('/home/ldm'):
         run('chown ldm.ldm %s' % LDM_PACK_NAME)
-        run('chmod +x util/run_ldm util/insert.sh util/cpu_mon.sh')
+        run('chmod +x util/run_ldm util/insert.sh util/cpu_mon.sh util/tc_mon.sh')
         run('chown -R ldm.ldm util')
 
 def install_pack():
@@ -115,11 +115,11 @@ def init_config():
         run('tc class add dev eth1 parent 1: classid 1:1 htb rate %smbit \
             ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
         run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit %sb' %
-            (str(2*SINGLE_BDP*RCV_NUM)), quiet=True)
+            ('600m'), quiet=True)
         run('tc class add dev eth1 parent 1: classid 1:2 htb rate %smbit \
             ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
         run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit %sb' %
-            (str(2*SINGLE_BDP*RCV_NUM)), quiet=True)
+            ('600m'), quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
             ip dst 224.0.0.1/32 flowid 1:1', quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
