@@ -101,9 +101,12 @@ def install_config_ctcp():
         run('make')
         run('insmod ./tcp_ctcp.ko', quiet=True)
     run('sysctl -w net.ipv4.tcp_congestion_control="ctcp"')
-    run('echo %s > /sys/module/tcp_ctcp/parameters/bw' % str(TC_RATE))
+    #run('echo %s > /sys/module/tcp_ctcp/parameters/bw' % str(TC_RATE))
+    run('echo %s > /sys/module/tcp_ctcp/parameters/bw' % str(10000))
+    #run('echo %s > /sys/module/tcp_ctcp/parameters/initial' %
+    #    str(int(math.ceil(float(SINGLE_BDP/1500)))))
     run('echo %s > /sys/module/tcp_ctcp/parameters/initial' %
-        str(int(math.ceil(float(SINGLE_BDP/1500)))))
+        str(500))
     run('echo %s > /sys/module/tcp_ctcp/parameters/scale' % str(120))
 
 def init_config():
