@@ -36,7 +36,7 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 30 # Mbps
+TC_RATE = 100 # Mbps
 RTT = 89 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
 RCV_NUM = 16 # number of receivers
@@ -115,11 +115,11 @@ def init_config():
         run('tc class add dev eth1 parent 1: classid 1:1 htb rate %smbit \
             ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
         run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit %sb' %
-            ('200m'), quiet=True)
+            ('50m'), quiet=True)
         run('tc class add dev eth1 parent 1: classid 1:2 htb rate %smbit \
             ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
         run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit %sb' %
-            ('200m'), quiet=True)
+            ('50m'), quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
             ip dst 224.0.0.1/32 flowid 1:1', quiet=True)
         run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
