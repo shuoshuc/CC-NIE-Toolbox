@@ -22,4 +22,6 @@
 
 
 par(mar=c(6.1,6.5,4.1,2.1))
+# cuts off the long tail
+tmp <- rtt_1ms[rtt_1ms<0.2]
 hist(tmp, breaks = 60, main='', cex.lab=1.5, cex.axis=1.5, xlab='Latency (seconds)')
