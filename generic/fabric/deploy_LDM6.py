@@ -38,7 +38,7 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 20 # Mbps
+TC_RATE = 60 # Mbps
 RTT = 89 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
 RCV_NUM = 16 # number of receivers
@@ -101,12 +101,9 @@ def install_config_ctcp():
         run('make')
         run('insmod ./tcp_ctcp.ko', quiet=True)
     run('sysctl -w net.ipv4.tcp_congestion_control="ctcp"')
-    #run('echo %s > /sys/module/tcp_ctcp/parameters/bw' % str(TC_RATE))
-    run('echo %s > /sys/module/tcp_ctcp/parameters/bw' % str(10000))
-    #run('echo %s > /sys/module/tcp_ctcp/parameters/initial' %
-    #    str(int(math.ceil(float(SINGLE_BDP/1500)))))
+    run('echo %s > /sys/module/tcp_ctcp/parameters/bw' % str(TC_RATE))
     run('echo %s > /sys/module/tcp_ctcp/parameters/initial' %
-        str(500))
+        str(int(math.ceil(float(SINGLE_BDP/1500)))))
     run('echo %s > /sys/module/tcp_ctcp/parameters/scale' % str(120))
 
 def init_config():

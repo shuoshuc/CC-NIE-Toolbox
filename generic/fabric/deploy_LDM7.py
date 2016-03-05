@@ -36,11 +36,11 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 20 # Mbps
-RTT = 1 # ms
+TC_RATE = 10 # Mbps
+RTT = 89 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
-RCV_NUM = 1 # number of receivers
-LOSS_RATE = 0.00
+RCV_NUM = 16 # number of receivers
+LOSS_RATE = 0.01
 
 def read_hosts():
     """
