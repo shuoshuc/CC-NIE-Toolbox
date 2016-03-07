@@ -116,7 +116,7 @@ def aggregate(filename, aggregate_size):
     sizes    = []
     sum_size = 0
     with open(filename, 'rb') as csvfile:
-        csvreader = csv.reader(csvfile, delimiter=',')
+        csvreader = csv.reader(csvfile, delimiter=' ')
         for i, row in enumerate(csvreader):
             group.append(i)
             sum_size += int(row[0])
