@@ -186,8 +186,8 @@ def calcThroughput(tx_group, complete_set, complete_dict):
     return (thru, complete_size)
 
 
-def calcVSR(tx_group, complete_set, vset):
-    """Calculates VCMTP-sourced rate (VSR) for an aggregate.
+def calcFFDR(tx_group, complete_set, vset):
+    """Calculates FFDR for an aggregate.
 
     Args:
         tx_group: Aggregate group.
@@ -195,40 +195,15 @@ def calcVSR(tx_group, complete_set, vset):
         vset: Group of VCMTP-sourced products.
 
     Returns:
-        vsr: VCMTP-sourced rate.
+        ffdr
     """
     complete_num  = len(tx_group & complete_set)
-    vsr_num       = len(tx_group & vset)
+    ffdr_num       = len(tx_group & vset)
     if complete_num:
-        vsr = float(vsr_num / complete_num) * 100
+        ffdr = float(ffdr_num / complete_num) * 100
     else:
-        vsr = -1
-    return vsr
-
-
-def calcCBR(tx_group, complete_set, complete_dict):
-    """Calculates cumulative bytes ratio (CBR) for an aggregate.
-
-    Args:
-        tx_group: Aggregate group.
-        complete_set: Set of complete products.
-        complete_dict: Dict of complete products.
-
-    Returns:
-        cbr: cumulative bytes ratio
-    """
-    ideal_time = 0
-    true_time  = 0
-    # vc_rate is the circuit rate in bps
-    vc_rate    = 40000000
-    for i in tx_group & complete_set:
-        ideal_time += float(complete_dict[i][0] / vc_rate)
-        true_time  += complete_dict[i][1]
-    if ideal_time and true_time:
-        cbr = float(ideal_time / true_time) * 100
-    else:
-        cbr = -1
-    return cbr
+        ffdr = -1
+    return ffdr
 
 
 def main(metadata, logfile, csvfile):
@@ -248,16 +223,15 @@ def main(metadata, logfile, csvfile):
     (rx_success_set, rx_success_dict, vset) = extractLog(logfile)
     tmp_str = 'Sent first prodindex, Sent last prodindex, Sender aggregate ' \
               'size (B), Successfully received aggregate size (B), ' \
-              'Throughput (bps), VSR (%), CBR (%)' + '\n'
+              'Throughput (bps), FFDR (%)' + '\n'
     w.write(tmp_str)
     for group, size in zip(tx_groups, tx_sizes):
         (thru, rx_group_size) = calcThroughput(set(group), rx_success_set,
                                                rx_success_dict)
-        vsr = calcVSR(set(group), rx_success_set, vset)
-        cbr = calcCBR(set(group), rx_success_set, rx_success_dict)
+        ffdr = calcFFDR(set(group), rx_success_set, vset)
         tmp_str = str(min(group)) + ',' + str(max(group)) + ',' \
                 + str(size) + ',' + str(rx_group_size) + ',' \
-                + str(thru) + ',' + str(vsr) + ',' + str(cbr) + '\n'
+                + str(thru) + ',' + str(ffdr) + '\n'
         w.write(tmp_str)
     w.close()
 
