@@ -4,7 +4,7 @@
 """@package ldm_parser
 Copyright (C) 2015 University of Virginia. All rights reserved.
 
-file      ldm_parser.py
+file      ldm6_par.py
 author    Shawn Chen <sc7cq@virginia.edu>
 version   1.0
 date      Nov. 1, 2015
