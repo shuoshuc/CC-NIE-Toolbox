@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""@package batch_job.py
+"""@package auto_deploy.py
 Copyright (C) 2015 University of Virginia. All rights reserved.
 
-file      batch_job.py
+file      auto_deploy.py
 author    Shawn Chen <sc7cq@virginia.edu>
 version   1.0
-date      August 23, 2015
+date      Apr. 5, 2015
 
 LICENSE
 This program is free software; you can redistribute it and/or modify it
@@ -20,7 +20,7 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 more details at http://www.gnu.org/copyleft/gpl.html
 
-brief     Launches batch job for VCMTP test experiments.
+brief     Automatically deploys LDM7 on CentOS 6/7, Ubuntu 12.04/14.04
 """
 
 import logging
