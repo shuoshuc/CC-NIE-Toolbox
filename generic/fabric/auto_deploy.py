@@ -214,14 +214,14 @@ def patch_sysctl():
 
 def add_loss():
     """
-    Adds loss in iptables.
+    Artificially inserts loss in receiving end host using iptables.
     """
     run('iptables -A INPUT -i eth1 -m statistic --mode random \
         --probability %s -p udp -j DROP' % str(LOSS_RATE))
 
 def rm_loss():
     """
-    Removes loss in iptables.
+    Artificially removes loss in receiving end host using iptables.
     """
     run('iptables -D INPUT -i eth1 -m statistic --mode random \
         --probability %s -p udp -j DROP' % str(LOSS_RATE))
