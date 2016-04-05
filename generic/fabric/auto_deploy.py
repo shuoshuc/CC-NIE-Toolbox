@@ -25,15 +25,27 @@ brief     Automatically deploys LDM7 on CentOS 6/7, Ubuntu 12.04/14.04
 
 import logging
 import sys
-from fabric.api import env, run
+from StringIO import StringIO
+from fabric.api import env, run, cd, get, sudo, put
+from fabric.context_managers import settings
 
 logging.basicConfig()
 paramiko_logger = logging.getLogger("paramiko.transport")
 paramiko_logger.disabled = True
 
+LDM_VER = 'ldm-6.12.15.42'
+LDM_PACK_NAME = LDM_VER + '.tar.gz'
+LDM_PACK_PATH = '~/Workspace/'
+TC_RATE = 20 # Mbps
+RTT = 89 # ms
+SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
+RCV_NUM = 4 # number of receivers
+LOSS_RATE = 0.01
+
 def read_hosts():
     """
     Reads hosts IP from sys.stdin line by line, expecting one per line.
+    Then appends the username to each IP address.
     """
     env.hosts = []
     for line in sys.stdin.readlines():
@@ -42,54 +54,180 @@ def read_hosts():
             host = 'root@' + host
             env.hosts.append(host)
 
-def runexpt_send():
-    run('git clone https://github.com/shawnsschen/CC-NIE-Toolbox.git')
-    run('git clone https://github.com/Unidata/vcmtp.git')
-    run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/sender/day1NGRID.csv')
-    run('cd ~/vcmtp/VCMTPv3/sender/ && make -f Makefile_send')
-    run('cd ~/vcmtp/VCMTPv3/sender/ && ./startTestSendApp.sh', pty=False)
+def clear_home():
+    """
+    Clears the ldm user home directory, including the existing product queue.
+    """
+    with cd('/home/ldm'):
+        run('rm -rf *')
 
-def runexpt_recv():
-    #run('git clone https://github.com/Unidata/vcmtp.git')
-    #run('cd ~/vcmtp/VCMTPv3/receiver/ && make -f Makefile_recv')
-    run('cd ~/vcmtp/VCMTPv3/receiver/ && ./startTestRecvApp.sh', pty=False)
+def upload_pack():
+    """
+    Uploads the LDM source code package onto the test node. Also uploads a
+    LDM start script.
+    """
+    put(LDM_PACK_PATH + LDM_PACK_NAME, '/home/ldm', mode=0664)
+    put('~/Workspace/CC-NIE-Toolbox/generic/misc/util/', '/home/ldm',
+        mode=0664)
+    with cd('/home/ldm'):
+        run('chown ldm.ldm %s' % LDM_PACK_NAME)
+        run('chmod +x util/run_ldm util/insert.sh util/cpu_mon.sh util/tc_mon.sh')
+        run('chown -R ldm.ldm util')
 
-def countrun():
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && grep -E "\[MCAST\ BOP\].*#0:" *.log | wc -l')
+def install_pack():
+    """
+    Compiles and installs the LDM source code.
+    """
+    with settings(sudo_user='ldm'):
+        with cd('/home/ldm'):
+            sudo('gunzip -c %s | pax -r \'-s:/:/src/:\'' % LDM_PACK_NAME)
+        patch_linkspeed()
+        patch_fsnd()
+        with cd('/home/ldm/%s/src' % LDM_VER):
+            sudo('make distclean', quiet=True)
+            sudo('find -exec touch \{\} \;', quiet=True)
+            sudo('./configure --with-debug --with-multicast \
+                 --disable-root-actions --prefix=/home/ldm \
+                 CFLAGS=-g CXXFLAGS=-g')
+            sudo('make install')
+            run('make root-actions')
 
-def splitlog():
-    #run('git clone https://github.com/shawnsschen/CC-NIE-Toolbox.git')
-    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/split.sh ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && echo "nohup sh split.sh VCMTPv3_RECEIVER_centos.log VCMTPv3_RECEIVER_centos_run &> /dev/null &" > run.sh && chmod +x run.sh')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ./run.sh', pty=False)
+def init_config():
+    """
+    Configures the etc file and environment variables. Also sets up tc and
+    routing table on the sender.
+    """
+    run('service ntpd start', quiet=True)
+    run('service iptables start', quiet=True)
+    run('yum -y install sysstat', quiet=True)
+    run('sed -i -e \'s/*\/10/*\/1/g\' /etc/cron.d/sysstat', quiet=True)
+    run('rm /var/log/sa/*', quiet=True)
+    run('service crond start', quiet=True)
+    run('service sysstat start', quiet=True)
+    iface = run('hostname -I | awk \'{print $2}\'')
+    if iface == '10.10.1.1':
+        config_str = ('MULTICAST ANY 224.0.0.1:38800 1 10.10.1.1\n'
+                      'ALLOW ANY ^.*$\nEXEC \"insert.sh\"'
+                      '\nEXEC \"cpu_mon.sh\"\nEXEC \"tc_mon.sh\"')
+        run('route add 224.0.0.1 dev eth1', quiet=True)
+        run('tc qdisc del dev eth1 root', quiet=True)
+        run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
+        run('tc class add dev eth1 parent 1: classid 1:1 htb rate %smbit \
+            ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
+        run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit %sb' %
+            ('600m'), quiet=True)
+        run('tc class add dev eth1 parent 1: classid 1:2 htb rate %smbit \
+            ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
+        run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit %sb' %
+            ('600m'), quiet=True)
+        run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
+            ip dst 224.0.0.1/32 flowid 1:1', quiet=True)
+        run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
+            ip dst 0/0 flowid 1:2', quiet=True)
+        with cd('/home/ldm'):
+            sudo('git clone \
+                 https://github.com/shawnsschen/LDM6-LDM7-comparison.git',
+                 user='ldm', quiet=True)
+        sudo('regutil -s 5G /queue/size', user='ldm')
+    else:
+        config_str = 'RECEIVE ANY 10.10.1.1 ' + iface
+        sudo('regutil -s 2G /queue/size', user='ldm')
+        patch_sysctl()
+    fd = StringIO()
+    get('/home/ldm/.bashrc', fd)
+    content = fd.getvalue()
+    if 'ulimit -c "unlimited"' in content:
+        update_bashrc = True
+    else:
+        update_bashrc = False
+    get('/home/ldm/.bash_profile', fd)
+    content = fd.getvalue()
+    if 'export PATH=$PATH:$HOME/util' in content:
+        update_profile = True
+    else:
+        update_profile = False
+    with settings(sudo_user='ldm'):
+        with cd('/home/ldm'):
+            sudo('echo \'%s\' > etc/ldmd.conf' % config_str)
+            if not update_bashrc:
+                sudo('echo \'ulimit -c "unlimited"\' >> .bashrc')
+            if not update_profile:
+                sudo('echo \'export PATH=$PATH:$HOME/util\' >> .bash_profile')
+        sudo('regutil -s %s /hostname' % iface)
+        #sudo('regutil -s 5G /queue/size')
+        sudo('regutil -s 35000 /queue/slots')
 
-def parselog():
-    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/autoproc_pergroup.sh ~/vcmtp/VCMTPv3/receiver/logs/')
-    #run('cp ~/CC-NIE-Toolbox/generic/LogParser/perGroupParser.py ~/vcmtp/VCMTPv3/receiver/logs/')
-    #run('cp ~/CC-NIE-Toolbox/GENI/day1NGRID_400min.csv ~/vcmtp/VCMTPv3/receiver/logs/day1NGRID.data')
-    #run('cd ~/CC-NIE-Toolbox/ && git pull')
-    #run('cp ~/CC-NIE-Toolbox/GENI/parse.sh ~/vcmtp/VCMTPv3/receiver/logs/')
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ./parse.sh', pty=False)
+def start_LDM():
+    """
+    Start LDM and writes log file to a specified location.
+    """
+    with settings(sudo_user='ldm'), cd('/home/ldm'):
+        sudo('run_ldm ldmd_test')
 
-def query_send():
-    run('tail -n 3 ~/vcmtp/VCMTPv3/sender/*.log')
+def stop_LDM():
+    """
+    Stops running LDM.
+    """
+    with settings(sudo_user='ldm'), cd('/home/ldm'):
+        sudo('ldmadmin stop')
 
-def query_recv():
-    run('tail -n 3 ~/vcmtp/VCMTPv3/receiver/logs/*.log')
+def fetch_log():
+    """
+    Fetches the LDM log.
+    """
+    iface = run('hostname -I | awk \'{print $2}\'')
+    with cd('/home/ldm/var/logs'):
+        run('mv ldmd_test.log %s.log' % iface)
+    get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM6-LDM7-LOG/')
+    if iface == '10.10.1.1':
+        with settings(sudo_user='ldm'), cd('/home/ldm'):
+            sudo('sar -n DEV | grep eth1 > bandwidth.log')
+            get('cpu_measure.log', '~/Workspace/LDM6-LDM7-LOG/')
+            get('bandwidth.log', '~/Workspace/LDM6-LDM7-LOG/')
+            get('tc_mon.log', '~/Workspace/LDM6-LDM7-LOG/')
 
-def terminate_recv():
-    run('pkill testRecvApp || true')
-    #run('rm -r ~/vcmtp/VCMTPv3/receiver/logs')
-    #run('rm -r ~/vcmtp')
+def patch_linkspeed():
+    """
+    Patches the receiving side linkspeed.
+    """
+    with settings(sudo_user='ldm'), cd(
+        '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/receiver' % LDM_VER):
+        sudo('sed -i -e \'s/linkspeed(20000000)/linkspeed(%s)/g\' \
+             vcmtpRecvv3.cpp' % str(TC_RATE*1000*1000), quiet=True)
 
-def addloss():
-    run("iptables -A INPUT -m statistic --mode random --probability 0.01 -p udp --dport 5173 -j DROP")
-    #run("iptables -L")
+def patch_fsnd():
+    """
+    Patches the f_snd in the sending side.
+    """
+    with settings(sudo_user='ldm'), cd(
+        '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/sender' % LDM_VER):
+        sudo('sed -i -e \'s/500.0/5000.0/g\' vcmtpSendv3.h', quiet=True)
 
-def checkalive():
-    run("ps aux | grep test")
+def patch_sysctl():
+    """
+    Patches the core mem size in sysctl config.
+    """
+    run('sysctl -w net.core.rmem_max=%s' % str(int(2*1000*1000*1000)))
+    #run('sysctl -w net.core.wmem_max=%s' % str(1*1024*1024*1024))
+    run('sysctl -w net.core.rmem_default=%s' % str(int(2*1000*1000*1000)))
+    #run('sysctl -w net.core.wmem_default=%s' % str(1*1024*1024*1024))
 
-def simple_task():
-    run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && rm split.sh && rm run.sh && rm VCMTPv3_RECEIVER_centos.log && ls')
-    #run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls -l | wc -l')
-    #run('cd ~/vcmtp/VCMTPv3/receiver/logs/ && ls -lh')
+def add_loss():
+    """
+    Adds loss in iptables.
+    """
+    run('iptables -A INPUT -i eth1 -m statistic --mode random \
+        --probability %s -p udp -j DROP' % str(LOSS_RATE))
+
+def rm_loss():
+    """
+    Removes loss in iptables.
+    """
+    run('iptables -D INPUT -i eth1 -m statistic --mode random \
+        --probability %s -p udp -j DROP' % str(LOSS_RATE))
+
+def deploy():
+    clear_home()
+    upload_pack()
+    install_pack()
+    init_config()
