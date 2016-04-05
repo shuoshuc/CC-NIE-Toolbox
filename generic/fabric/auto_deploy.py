@@ -82,7 +82,6 @@ def install_pack():
         with cd('/home/ldm'):
             sudo('gunzip -c %s | pax -r \'-s:/:/src/:\'' % LDM_PACK_NAME)
         patch_linkspeed()
-        patch_fsnd()
         with cd('/home/ldm/%s/src' % LDM_VER):
             sudo('make distclean', quiet=True)
             sudo('find -exec touch \{\} \;', quiet=True)
@@ -194,14 +193,6 @@ def patch_linkspeed():
         '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/receiver' % LDM_VER):
         sudo('sed -i -e \'s/linkspeed(20000000)/linkspeed(%s)/g\' \
              vcmtpRecvv3.cpp' % str(TC_RATE*1000*1000), quiet=True)
-
-def patch_fsnd():
-    """
-    Patches the f_snd in the sending side.
-    """
-    with settings(sudo_user='ldm'), cd(
-        '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/sender' % LDM_VER):
-        sudo('sed -i -e \'s/500.0/5000.0/g\' vcmtpSendv3.h', quiet=True)
 
 def patch_sysctl():
     """
