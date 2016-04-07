@@ -41,6 +41,7 @@ RTT = 1 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
 RCV_NUM = 1 # number of receivers
 LOSS_RATE = 0.01
+IFACE_NAME = 'eth2.137'
 
 def read_hosts():
     """
@@ -108,21 +109,21 @@ def init_config():
         config_str = ('MULTICAST ANY 224.0.0.1:38800 1 10.10.1.1\n'
                       'ALLOW ANY ^.*$\nEXEC \"insert.sh\"'
                       '\nEXEC \"cpu_mon.sh\"\nEXEC \"tc_mon.sh\"')
-        run('route add 224.0.0.1 dev eth1', quiet=True)
-        run('tc qdisc del dev eth1 root', quiet=True)
-        run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
-        run('tc class add dev eth1 parent 1: classid 1:1 htb rate %smbit \
-            ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
-        run('tc qdisc add dev eth1 parent 1:1 handle 10: bfifo limit %sb' %
-            ('600m'), quiet=True)
-        run('tc class add dev eth1 parent 1: classid 1:2 htb rate %smbit \
-            ceil %smbit' % (str(TC_RATE), str(TC_RATE)), quiet=True)
-        run('tc qdisc add dev eth1 parent 1:2 handle 11: bfifo limit %sb' %
-            ('600m'), quiet=True)
-        run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
-            ip dst 224.0.0.1/32 flowid 1:1', quiet=True)
-        run('tc filter add dev eth1 protocol ip parent 1:0 prio 1 u32 match \
-            ip dst 0/0 flowid 1:2', quiet=True)
+        run('route add 224.0.0.1 dev %s' % IFACE_NAME, quiet=True)
+        run('tc qdisc del dev %s root' % IFACE_NAME, quiet=True)
+        run('tc qdisc add dev %s root handle 1: htb default 2' % IFACE_NAME, quiet=True)
+        run('tc class add dev %s parent 1: classid 1:1 htb rate %smbit \
+            ceil %smbit' % (IFACE_NAME, str(TC_RATE), str(TC_RATE)), quiet=True)
+        run('tc qdisc add dev %s parent 1:1 handle 10: bfifo limit %sb' %
+            (IFACE_NAME, '600m'), quiet=True)
+        run('tc class add dev %s parent 1: classid 1:2 htb rate %smbit \
+            ceil %smbit' % (IFACE_NAME, str(TC_RATE), str(TC_RATE)), quiet=True)
+        run('tc qdisc add dev %s parent 1:2 handle 11: bfifo limit %sb' %
+            (IFACE_NAME, '600m'), quiet=True)
+        run('tc filter add dev %s protocol ip parent 1:0 prio 1 u32 match \
+            ip dst 224.0.0.1/32 flowid 1:1' % IFACE_NAME, quiet=True)
+        run('tc filter add dev %s protocol ip parent 1:0 prio 1 u32 match \
+            ip dst 0/0 flowid 1:2' % IFACE_NAME, quiet=True)
         with cd('/home/ldm'):
             sudo('git clone \
                  https://github.com/shawnsschen/LDM6-LDM7-comparison.git',
@@ -180,7 +181,7 @@ def fetch_log():
     get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM6-LDM7-LOG/')
     if iface == '10.10.1.1':
         with settings(sudo_user='ldm'), cd('/home/ldm'):
-            sudo('sar -n DEV | grep eth1 > bandwidth.log')
+            sudo('sar -n DEV | grep %s > bandwidth.log' % IFACE_NAME)
             get('cpu_measure.log', '~/Workspace/LDM6-LDM7-LOG/')
             get('bandwidth.log', '~/Workspace/LDM6-LDM7-LOG/')
             get('tc_mon.log', '~/Workspace/LDM6-LDM7-LOG/')
@@ -215,15 +216,15 @@ def add_loss():
     """
     Adds loss in iptables.
     """
-    run('iptables -A INPUT -i eth1 -m statistic --mode random \
-        --probability %s -p udp -j DROP' % str(LOSS_RATE))
+    run('iptables -A INPUT -i %s -m statistic --mode random \
+        --probability %s -p udp -j DROP' % (IFACE_NAME, str(LOSS_RATE)))
 
 def rm_loss():
     """
     Removes loss in iptables.
     """
-    run('iptables -D INPUT -i eth1 -m statistic --mode random \
-        --probability %s -p udp -j DROP' % str(LOSS_RATE))
+    run('iptables -D INPUT -i %s -m statistic --mode random \
+        --probability %s -p udp -j DROP' % (IFACE_NAME, str(LOSS_RATE)))
 
 def deploy():
     clear_home()
