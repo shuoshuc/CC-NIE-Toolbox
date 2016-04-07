@@ -98,7 +98,7 @@ def init_config():
     routing table on the sender.
     """
     run('service ntpd start', quiet=True)
-    run('service iptables start', quiet=True)
+    #run('service iptables start', quiet=True)
     run('yum -y install sysstat', quiet=True)
     run('sed -i -e \'s/*\/10/*\/1/g\' /etc/cron.d/sysstat', quiet=True)
     run('rm /var/log/sa/*', quiet=True)
