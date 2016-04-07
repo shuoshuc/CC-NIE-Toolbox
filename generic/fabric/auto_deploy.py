@@ -41,6 +41,7 @@ RTT = 89 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
 RCV_NUM = 4 # number of receivers
 LOSS_RATE = 0.01
+mcast_addr = '224.0.0.1'
 
 def read_hosts():
     """
@@ -108,7 +109,7 @@ def init_config():
         config_str = ('MULTICAST ANY 224.0.0.1:38800 1 10.10.1.1\n'
                       'ALLOW ANY ^.*$\nEXEC \"insert.sh\"'
                       '\nEXEC \"cpu_mon.sh\"\nEXEC \"tc_mon.sh\"')
-        run('route add 224.0.0.1 dev eth1', quiet=True)
+        run('route add %s dev eth1' % mcast_addr, quiet=True)
         run('tc qdisc del dev eth1 root', quiet=True)
         run('tc qdisc add dev eth1 root handle 1: htb default 2', quiet=True)
         run('tc class add dev eth1 parent 1: classid 1:1 htb rate %smbit \
