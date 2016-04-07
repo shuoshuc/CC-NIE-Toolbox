@@ -36,10 +36,10 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 20 # Mbps
-RTT = 89 # ms
+TC_RATE = 500 # Mbps
+RTT = 1 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
-RCV_NUM = 4 # number of receivers
+RCV_NUM = 1 # number of receivers
 LOSS_RATE = 0.01
 
 def read_hosts():
@@ -87,8 +87,7 @@ def install_pack():
             sudo('make distclean', quiet=True)
             sudo('find -exec touch \{\} \;', quiet=True)
             sudo('./configure --with-debug --with-multicast \
-                 --disable-root-actions --prefix=/home/ldm \
-                 CFLAGS=-g CXXFLAGS=-g')
+                 --disable-root-actions CFLAGS=-g CXXFLAGS=-g')
             sudo('make install')
             run('make root-actions')
 
