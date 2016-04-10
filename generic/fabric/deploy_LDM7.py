@@ -98,7 +98,7 @@ def init_config():
     routing table on the sender.
     """
     run('service ntpd start', quiet=True)
-    #run('service iptables start', quiet=True)
+    run('service iptables start', quiet=True)
     run('yum -y install sysstat', quiet=True)
     run('sed -i -e \'s/*\/10/*\/1/g\' /etc/cron.d/sysstat', quiet=True)
     run('rm /var/log/sa/*', quiet=True)
@@ -179,14 +179,12 @@ def fetch_log():
     with cd('/home/ldm/var/logs'):
         run('mv ldmd_test.log %s.log' % iface)
     get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM6-LDM7-LOG/')
-    """
     if iface == '10.10.1.1':
         with settings(sudo_user='ldm'), cd('/home/ldm'):
             sudo('sar -n DEV | grep %s > bandwidth.log' % IFACE_NAME)
             get('cpu_measure.log', '~/Workspace/LDM6-LDM7-LOG/')
             get('bandwidth.log', '~/Workspace/LDM6-LDM7-LOG/')
             get('tc_mon.log', '~/Workspace/LDM6-LDM7-LOG/')
-    """
 
 def patch_linkspeed():
     """
