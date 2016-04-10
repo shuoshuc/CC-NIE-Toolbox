@@ -36,7 +36,7 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 500 # Mbps
+TC_RATE = 8000 # Mbps
 RTT = 1 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
 RCV_NUM = 1 # number of receivers
@@ -179,12 +179,14 @@ def fetch_log():
     with cd('/home/ldm/var/logs'):
         run('mv ldmd_test.log %s.log' % iface)
     get('/home/ldm/var/logs/%s.log' % iface, '~/Workspace/LDM6-LDM7-LOG/')
+    """
     if iface == '10.10.1.1':
         with settings(sudo_user='ldm'), cd('/home/ldm'):
             sudo('sar -n DEV | grep %s > bandwidth.log' % IFACE_NAME)
             get('cpu_measure.log', '~/Workspace/LDM6-LDM7-LOG/')
             get('bandwidth.log', '~/Workspace/LDM6-LDM7-LOG/')
             get('tc_mon.log', '~/Workspace/LDM6-LDM7-LOG/')
+    """
 
 def patch_linkspeed():
     """
