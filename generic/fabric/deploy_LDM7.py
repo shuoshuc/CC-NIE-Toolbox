@@ -36,12 +36,12 @@ paramiko_logger.disabled = True
 LDM_VER = 'ldm-6.12.15.42'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
-TC_RATE = 8000 # Mbps
+TC_RATE = 20 # Mbps
 RTT = 1 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
 RCV_NUM = 1 # number of receivers
 LOSS_RATE = 0.01
-IFACE_NAME = 'eth2.137'
+IFACE_NAME = 'eth1'
 
 def read_hosts():
     """
@@ -84,12 +84,13 @@ def install_pack():
             sudo('gunzip -c %s | pax -r \'-s:/:/src/:\'' % LDM_PACK_NAME)
         patch_linkspeed()
         patch_fsnd()
+        patch_frcv()
         with cd('/home/ldm/%s/src' % LDM_VER):
             sudo('make distclean', quiet=True)
             sudo('find -exec touch \{\} \;', quiet=True)
             sudo('./configure --with-debug --with-multicast \
                  --disable-root-actions CFLAGS=-g CXXFLAGS=-g')
-            sudo('make install')
+            sudo('make CXXFLAGS="-DDEBUG1" install')
             run('make root-actions')
 
 def init_config():
@@ -194,6 +195,14 @@ def patch_linkspeed():
         '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/receiver' % LDM_VER):
         sudo('sed -i -e \'s/linkspeed(20000000)/linkspeed(%s)/g\' \
              vcmtpRecvv3.cpp' % str(TC_RATE*1000*1000), quiet=True)
+
+def patch_frcv():
+    """
+    Patches the frcv value.
+    """
+    with settings(sudo_user='ldm'), cd(
+        '/home/ldm/%s/src/mcast_lib/vcmtp/VCMTPv3/receiver' % LDM_VER):
+        sudo('sed -i -e \'s/Frcv 20/Frcv 5/g\' vcmtpRecvv3.cpp', quiet=True)
 
 def patch_fsnd():
     """
