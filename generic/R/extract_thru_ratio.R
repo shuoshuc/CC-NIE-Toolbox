@@ -258,3 +258,11 @@ title('f_rcv study (Expt D/E/F)')
 ggplot(df, aes(x=id, y=val, colour=group, group=group)) + 
 geom_line() + geom_point() + xlab("Group number") + ylab("Block Retx Ratio (%)") +
 ggtitle("Block Retx Ratio Study (Expt F)") + theme_bw()
+
+
+pd <- position_dodge(0.1)
+ggplot(data = df.melted, aes(x = x, y = value, color = variable)) + geom_point() +
+  geom_line(position=pd) + geom_point(aes(shape=variable, color=variable), size=3) +
+  xlab("Group number") + ylab("Block Retx Ratio (%)") +
+  ggtitle("BRR study w/ and w/o background traffic (frcv=10)") + theme_bw() +
+  theme(text = element_text(size=20), axis.text = element_text(size=20))
