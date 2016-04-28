@@ -83,7 +83,7 @@ def install_pack():
         with cd('/home/ldm'):
             sudo('gunzip -c %s | pax -r \'-s:/:/src/:\'' % LDM_PACK_NAME)
         patch_linkspeed()
-        patch_frcv()
+        #patch_frcv()
         with cd('/home/ldm/%s/src' % LDM_VER):
             sudo('make distclean', quiet=True)
             sudo('find -exec touch \{\} \;', quiet=True)
