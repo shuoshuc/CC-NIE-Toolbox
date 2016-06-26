@@ -33,14 +33,14 @@ logging.basicConfig()
 paramiko_logger = logging.getLogger("paramiko.transport")
 paramiko_logger.disabled = True
 
-LDM_VER = 'ldm-6.12.15.42'
+LDM_VER = 'ldm-6.13.2.3'
 LDM_PACK_NAME = LDM_VER + '.tar.gz'
 LDM_PACK_PATH = '~/Workspace/'
 TC_RATE = 20 # Mbps
 RTT = 1 # ms
 SINGLE_BDP = TC_RATE * 1000 * RTT / 8 # bytes
 RCV_NUM = 1 # number of receivers
-LOSS_RATE = 0.01
+LOSS_RATE = 0.02
 IFACE_NAME = 'eth1'
 
 def read_hosts():
@@ -162,7 +162,8 @@ def start_LDM():
     Start LDM and writes log file to a specified location.
     """
     with settings(sudo_user='ldm'), cd('/home/ldm'):
-        sudo('run_ldm ldmd_test')
+        sudo('ldmadmin mkqueue -f')
+        sudo('ldmadmin start -v')
 
 def stop_LDM():
     """
